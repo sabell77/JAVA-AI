@@ -2,12 +2,14 @@ package com.fullstack.demo;
 
 import java.util.ArrayList;
 import com.fullstack.demo.model.*;
+import com.fullstack.demo.repository.CourseRepository;
+import com.fullstack.demo.repository.InMemoryCourseRepository;
+import com.fullstack.demo.service.CourseService;
 
 public class Main {
     public static void main(String[] args) {
-        // Syntax for creating a new object (instance) of the Course class
-        // ClassName objectName = new Constructor();
-        // ClassName and Constructor usually match
+        CourseRepository repository = new InMemoryCourseRepository();
+        CourseService courseService = new CourseService(repository);
 
         ArrayList<Instructor> instructors = new ArrayList<>();
         instructors.add(new Instructor("I001", "Aina Rahman", "Java Development"));
@@ -25,6 +27,10 @@ public class Main {
 
         courses.get(0).setInstructor(instructors.get(0));
         courses.get(1).setInstructor(instructors.get(1));
+
+        courseService.createCourse(courses.get(0));
+        courseService.createCourse(courses.get(1));
+        courseService.createCourse(courses.get(2));
 
         ArrayList<CourseOffering> offerings = new ArrayList<>();
         offerings.add(new CourseOffering(
