@@ -1,5 +1,6 @@
 package com.fullstack.demo;
 
+import java.util.ArrayList;
 import com.fullstack.demo.model.*;
 
 public class Main {
@@ -8,63 +9,73 @@ public class Main {
         // ClassName objectName = new Constructor();
         // ClassName and Constructor usually match
 
-        Instructor instructor1 = new Instructor("I001", "Alice Johnson", "Java Development");
-        Instructor instructor2 = new Instructor("I002", "Bob Smith", "React Development");
+        ArrayList<Instructor> instructors = new ArrayList<>();
+        instructors.add(new Instructor("I001", "Aina Rahman", "Java Development"));
+        instructors.add(new Instructor("I002", "Bob Smith", "React Development"));
 
-        Course course1 = new Course("C001", "Java Fundamentals", 14, "Beginner", "Programming", true);
-        Course course2 = new Course("C002", "React Frontend Development", 21, "Intermediate", "Frontend", false);
+        ArrayList<Course> courses = new ArrayList<>();
+        courses.add(new Course("C001", "Java Fundamentals", 14, "Beginner", "Programming", true));
+        courses.add(new Course("C002", "React Frontend Development", 21, "Intermediate", "Frontend", true));
+        courses.add(new Course("C003", "MongoDB Basics", 14, "Beginner", "Database", false));
 
-        CourseOffering offering1 = new CourseOffering(
-            "OFF001",
-            "Java Fundamentals - June 2026 Intake",
-            course1,
-            instructor1,
-            "2026-06-19",
-            "2026-06-20",
-            25,
+        ArrayList<Student> students = new ArrayList<>();
+        students.add(new Student("S001", "Alice Johnson", "alice@example.com"));
+        students.add(new Student("S002", "Charlie Brown", "charlie@example.com"));
+        students.add(new Student("S003", "Diana Prince", "diana@example.com"));
+
+        courses.get(0).setInstructor(instructors.get(0));
+        courses.get(1).setInstructor(instructors.get(1));
+
+        ArrayList<CourseOffering> offerings = new ArrayList<>();
+        offerings.add(new CourseOffering(
+            "OFF001", 
+            "Java Fundamentals - June 2026 Intake", 
+            courses.get(0),       // References first course item in our list
+            instructors.get(0),   // References first instructor item in our list
+            "2026-06-19", 
+            "2026-06-20", 
+            25, 
             "Online"
-        );
+        ));
 
-        CourseOffering offering2 = new CourseOffering(
-            "OFF002",
-            "React Frontend - Corporate Cohort",
-            course2,
-            instructor2,
-            "2026-07-01",
-            "2026-07-15",
-            15,
+        offerings.add(new CourseOffering(
+            "OFF002", 
+            "React Frontend - Corporate Cohort", 
+            courses.get(1),       // References second course item in our list
+            instructors.get(1),   // References second instructor item in our list
+            "2026-07-01", 
+            "2026-07-15", 
+            15, 
             "Hybrid"
-        );
+        ));
 
         System.out.println("================================================");
         System.out.println("          COURSE OFFERING SUMMARIES             ");
         System.out.println("================================================");
-        offering1.printOfferingSummary();
-        offering2.printOfferingSummary();
-
-        Student student1 = new Student("S001", "Charlie Brown", "cFq0l@example.com");
-        Student student2 = new Student("S002", "Daisy Duck", "d4oQG@example.com");
-
-        course1.setInstructor(instructor1);
-        course2.setInstructor(instructor2);
+        for (CourseOffering offering : offerings) {
+            offering.printOfferingSummary();
+        }
 
         System.out.println("================================================");
         System.out.println("               Instructor Profiles              ");
         System.out.println("================================================");
-        instructor1.printProfile();
-        instructor2.printProfile();
+        for (Instructor instructor : instructors) {
+            instructor.printProfile();
+        }
 
         System.out.println("================================================");
         System.out.println("                Course Summaries                ");
         System.out.println("================================================");
-        course1.printSummary();
-        course2.printSummary();
+        for (Course course : courses) {
+            course.printSummary();
+        }
 
         System.out.println("================================================");
         System.out.println("                Student Profiles                ");
         System.out.println("================================================");
-        student1.printProfile();
-        student2.printProfile();
+        for (Student student : students) {
+            student.printProfile();
+        }
 
     }
 }
