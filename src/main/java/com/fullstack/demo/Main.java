@@ -48,15 +48,21 @@ public class Main {
         course1.setInstructor(instructor1);
         course2.setInstructor(instructor2);
 
-        System.out.println("Instructor Profiles:");
+        System.out.println("================================================");
+        System.out.println("               Instructor Profiles              ");
+        System.out.println("================================================");
         instructor1.printProfile();
         instructor2.printProfile();
 
-        System.out.println("Course Summaries:");
+        System.out.println("================================================");
+        System.out.println("                Course Summaries                ");
+        System.out.println("================================================");
         course1.printSummary();
         course2.printSummary();
 
-        System.out.println("Student Profiles:");
+        System.out.println("================================================");
+        System.out.println("                Student Profiles                ");
+        System.out.println("================================================");
         student1.printProfile();
         student2.printProfile();
 
