@@ -10,44 +10,53 @@ public class Course {
     private boolean active;
 
     public Course(String courseId, String title, int durationHours, String level, String category, boolean active) {
-        this.courseId = courseId;
-        this.title = title;
+        setCourseId(courseId);
+        setTitle(title);
+        setDurationHours(durationHours);
+        setLevel(level);
+        setCategory(category);
+        setActive(active);
+    }
+
+    public String getCourseId() { return courseId;}
+    public void setCourseId(String courseId) { 
+        this.courseId = requireText(courseId, "Course ID"); }
+        
+    public String getTitle() { return title; }
+    public void setTitle(String title) { 
+        this.title = requireText(title, "CourseTitle"); }
+
+    public int getDurationHours() { return durationHours;}
+    public void setDurationHours(int durationHours) {
+        if (durationHours <= 0) {
+            throw new IllegalArgumentException("Duration must be more than 0.");
+        }
         this.durationHours = durationHours;
-        this.level = level;
-        this.category = category;
-        this.active = active;
     }
 
-    public String getCourseId() {
-        return courseId;
+    public String getLevel() {return level;}
+    public void setLevel(String level) {
+        this.level = requireText(level, "Level");
     }
 
-    public String getTitle() {
-        return title;
+    public String getCategory() { return category;}
+    public void setCategory(String category) {
+        this.category = requireText(category, "Category");
     }
 
-    public int getDurationHours() {
-        return durationHours;
-    }
+    public boolean isActive() {return active;}
+    public void setActive(boolean active) { this.active = active; }   
 
-    public String getLevel() {
-        return level;
-    }
-
-    public String getCategory() {
-        return category;
-    }
-
-    public boolean isActive() {
-        return active;
-    }
-
-    public Instructor getInstructor() {
-        return instructor;
-    }
-
+    public Instructor getInstructor() {return instructor;}
     public void setInstructor(Instructor instructor) {
         this.instructor = instructor;
+    }
+
+    private static String requireText(String value, String fieldName) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+        return value.trim();
     }
 
     public void printSummary() {
