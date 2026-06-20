@@ -5,10 +5,10 @@ public class Instructor {
     private String instructorName;
     private String expertise;
 
-    public Instructor(String instructorId, String instructorName, String specialization) {
+    public Instructor(String instructorId, String instructorName, String expertise) {
         setInstructorId(instructorId);
         setInstructorName(instructorName);
-        setSpecialization(specialization);
+        setExpertise(expertise);
     }
 
     public String getInstructorId() {return instructorId;}
@@ -22,8 +22,8 @@ public class Instructor {
     }
 
     public String getExpertise() {return expertise;}
-    public void setSpecialization(String specialization) {
-        this.expertise = requireText(specialization, "Expertise");
+    public void setExpertise(String expertise) {
+        this.expertise = requireText(expertise, "Expertise");
     }
 
     private static String requireText(String value, String fieldName) {
