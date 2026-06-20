@@ -23,7 +23,6 @@ public class CourseServiceDemo {
        System.out.println("\n=== Invalid Course Test ===");
        
        try {
-            // Attempting to create a course with an empty title will trigger your model validation
             Course badTitleCourse = new Course("C002", "", 10, "Beginner", "Programming", true);
             courseService.createCourse(badTitleCourse);
         } catch (IllegalArgumentException | InvalidCourseException e) {
