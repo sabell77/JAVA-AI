@@ -5,27 +5,38 @@ public class Instructor {
     private String instructorName;
     private String expertise;
 
-    public Instructor(String instructorId, String instructorName, String expertise) {
-        this.instructorId = instructorId;
-        this.instructorName = instructorName;
-        this.expertise = expertise;
+    public Instructor(String instructorId, String instructorName, String specialization) {
+        setInstructorId(instructorId);
+        setInstructorName(instructorName);
+        setSpecialization(specialization);
     }
 
-    public String getInstructorId() {
-        return instructorId;
+    public String getInstructorId() {return instructorId;}
+    public void setInstructorId(String instructorId) {
+        this.instructorId = requireText(instructorId, "Instructor ID");
     }
 
-    public String getInstructorName() {
-        return instructorName;
+    public String getInstructorName() {return instructorName;}
+    public void setInstructorName(String instructorName) {
+        this.instructorName = requireText(instructorName, "Instructor Name");
     }
 
-    public String getExpertise() {
-        return expertise;
+    public String getExpertise() {return expertise;}
+    public void setSpecialization(String specialization) {
+        this.expertise = requireText(specialization, "Expertise");
+    }
+
+    private static String requireText(String value, String fieldName) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException(fieldName + " is required.");
+        }
+        return value.trim();
     }
 
     public void printProfile() {
         System.out.println("Instructor ID: " + instructorId);
         System.out.println("Name: " + instructorName);
         System.out.println("Expertise: " + expertise);
+        System.out.println("---------------------------------");
     }
 }

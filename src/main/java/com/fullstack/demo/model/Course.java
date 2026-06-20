@@ -74,5 +74,6 @@ public class Course {
         } else {
             System.out.println("Instructor: " + instructor.getInstructorName());
         }
+        System.out.println("---------------------------------");
     }
 }
