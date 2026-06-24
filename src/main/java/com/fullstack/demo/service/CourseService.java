@@ -6,6 +6,7 @@ import com.fullstack.demo.repository.CourseRepository;
 import com.fullstack.demo.exception.CourseNotFoundException;
 import com.fullstack.demo.exception.InvalidCourseException;
 import com.fullstack.demo.model.Course;
+import com.fullstack.demo.model.Instructor;
 
 public class CourseService {
 
@@ -83,5 +84,25 @@ public class CourseService {
     //         throw new CourseNotFoundException(courseId);
     //     }
     // }
+
+    public Course assignInstructor(String courseId, Instructor instructor) {
+        Course course = getCourseById(courseId); // 1. Find the course by ID 
+        course.setInstructor(instructor); // 2. Assign the instructor to the course
+        return courseRepository.save(course); // 3 & 4. Save and return the updated course
+    }
+
+    public List<Course> searchByInstructorName(String instructorName) {
+        // 1 & 2. Handle null input safely by treating it as an empty string
+        final String searchName = (instructorName == null) ? "" : instructorName.toLowerCase().trim();
+
+        // 3. Search all courses using Java Streams
+        return courseRepository.findAll().stream()
+                // 4. Critical Checkpoint: Ignore courses that don't have an instructor assigned yet
+                .filter(course -> course.getInstructor() != null)
+                // 5 & 6. Match instructor name ignoring uppercase/lowercase differences
+                .filter(course -> course.getInstructor().getName() != null &&
+                                  course.getInstructor().getName().toLowerCase().contains(searchName))
+                .collect(Collectors.toList());
+    }
     
 }

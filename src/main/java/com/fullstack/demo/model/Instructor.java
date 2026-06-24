@@ -16,6 +16,10 @@ public class Instructor {
         this.instructorId = requireText(instructorId, "Instructor ID");
     }
 
+    public String getName() {
+        return this.instructorName;
+    }
+
     public String getInstructorName() {return instructorName;}
     public void setInstructorName(String instructorName) {
         this.instructorName = requireText(instructorName, "Instructor Name");
