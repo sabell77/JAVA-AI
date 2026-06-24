@@ -1,6 +1,7 @@
 package com.fullstack.demo.service;
 
 import java.util.List;
+import java.util.stream.Collectors;
 import com.fullstack.demo.repository.CourseRepository;
 import com.fullstack.demo.exception.CourseNotFoundException;
 import com.fullstack.demo.exception.InvalidCourseException;
@@ -17,6 +18,30 @@ public class CourseService {
     public Course createCourse(Course course) {
         validateCourse(course);
         return courseRepository.save(course);
+    }
+
+    public List<Course> getAllCourses() {
+        return courseRepository.findAll();
+    }
+
+    public List<Course> searchByTitle(String keyword) {
+        // Safe check: Treat null keyword as an empty string ""
+        final String searchKeyword = (keyword == null) ? "" : keyword.toLowerCase().trim();
+
+        return courseRepository.findAll().stream()
+                .filter(course -> course.getTitle() != null && 
+                                  course.getTitle().toLowerCase().contains(searchKeyword))
+                .collect(Collectors.toList()); 
+    }
+
+    public List<Course> filterByLevel(String level) {
+        // Safe check: Treat null level as an empty string ""
+        final String filterLevel = (level == null) ? "" : level.toLowerCase().trim();
+
+        return courseRepository.findAll().stream()
+                .filter(course -> course.getLevel() != null && 
+                                  course.getLevel().toLowerCase().equalsIgnoreCase(filterLevel))
+                .collect(Collectors.toList());
     }
 
     private void validateCourse(Course course) {
@@ -59,7 +84,4 @@ public class CourseService {
     //     }
     // }
     
-    public List<Course> getAllCourses() {
-        return courseRepository.findAll();
-    }
 }
