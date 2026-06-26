@@ -43,5 +43,17 @@ public class CourseOffering {
         System.out.println("Delivery Mode: " + deliveryMode);
         System.out.println("------------------------------------------------");
     }
+
+    public void printSummary() {
+    String courseTitle = (this.course != null) ? this.course.getTitle() : "No Course Assigned";
+    String instructorName = (this.instructor != null) ? this.instructor.getName() : "No Instructor Assigned";
+    
+    System.out.println(this.offeringId + " - " + this.offeringName 
+        + "\n| Course: " + courseTitle 
+        + "\n| Instructor: " + instructorName 
+        + "\n| Dates: " + this.startDate + " to " + this.endDate 
+        + "\n| Cap: " + this.capacity 
+        + "\n| Mode: " + this.deliveryMode + "\n");
+}
     
 }

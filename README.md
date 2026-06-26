@@ -85,3 +85,11 @@ A Java constructor must have the exact same name as the class and does not decla
     3. A Frontend Web UI (React/Angular) or Mobile App wouldn't be able to read or intercept a system console printout, causing the app to fail silently.
 
     By throwing an exception, the service alerts the app that an error occurred, allowing different entry point controllers to catch the error and translate it into whatever specific presentation format their client requires.
+
+## Day 3 Exercise 04
+
+#### Why is CourseOffering a better design than putting start date, end date, and capacity directly inside Course?
+
+Putting scheduling data inside 'Course' creates a 1:1 limitation, meaning a course could only ever be taught once. 
+
+By separating them out into a 'CourseOffering' class using composition, a single blueprint 'Course' (e.g., Java Fundamentals) can be reused infinitely across different intakes, different dates, different locations, and different instructors without duplicating the core metadata (title, syllabus, description, credit hours). 
