@@ -1,5 +1,6 @@
 package com.fullstack.demo.service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import com.fullstack.demo.repository.CourseRepository;
@@ -33,6 +34,27 @@ public class CourseService {
                 .filter(course -> course.getTitle() != null && 
                                   course.getTitle().toLowerCase().contains(searchKeyword))
                 .collect(Collectors.toList()); 
+    }
+
+    public List<Course> searchByLevelUsingLoop(String level) {
+        String safeLevel = (level == null) ? "" : level.trim();
+        List<Course> results = new ArrayList<>();
+
+        for (Course course : courseRepository.findAll()) {
+            if (course.getLevel() != null && course.getLevel().equalsIgnoreCase(safeLevel)) {
+                results.add(course);
+            }
+        }
+
+        return results;
+    }
+
+    public List<Course> searchByLevelUsingStream(String level) {
+        String safeLevel = (level == null) ? "" : level.trim();
+
+        return courseRepository.findAll().stream()
+                .filter(course -> course.getLevel() != null && course.getLevel().equalsIgnoreCase(safeLevel))
+                .toList();
     }
 
     public List<Course> filterByLevel(String level) {
