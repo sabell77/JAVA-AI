@@ -70,3 +70,18 @@ A Java constructor must have the exact same name as the class and does not decla
 #### What would probably replace it later when we use MongoDB?
 
     A concrete class named something like 'MongoCourseRepository' or an interface extending Spring Data's 'MongoRepository'. This class will implement the exact same 'CourseRepository' interface but route all save/find queries across a network connection directly to a persistent MongoDB database cluster on a hard drive.
+
+## Day 3 Exercise 03
+
+#### Why is throwing CourseNotFoundException better than printing inside CourseService?
+    Throwing an exception decouples the business logic from the user interface. A backend service layer might be shared by multiple client controllers. 
+
+    If you hardcode 'System.out.println()' inside the service:
+
+    1. A Console App would print text to the terminal screen (which works fine).
+
+    2. A Web API (Spring Boot) would log text uselessly to the server terminal, but return a deceptive '200 OK' status with blank data to the web browser instead of a clean '404 Not Found' error code.
+
+    3. A Frontend Web UI (React/Angular) or Mobile App wouldn't be able to read or intercept a system console printout, causing the app to fail silently.
+
+    By throwing an exception, the service alerts the app that an error occurred, allowing different entry point controllers to catch the error and translate it into whatever specific presentation format their client requires.
