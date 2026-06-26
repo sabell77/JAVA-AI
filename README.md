@@ -42,3 +42,21 @@ A Java constructor must have the exact same name as the class and does not decla
 
 3. **Dynamic Resource Allocation:** Fluid attributes like student rosters, assigned classrooms, unique access links, and variable instructing faculty belong explicitly to a specific scheduled instance. Tracking these entities via a distinct `CourseOffering` relational component enables real-time cohort tracking and accurate historical logs without muddying your foundational course catalog metrics.
 
+## Day 3 Exercise 01
+
+### When getCourseById("C004") is called, which file does the request go to first, second, and third?
+
+#### 1. First File: `CourseService.java`
+The request starts when the demo/practice class calls courseService.getCourseById("C004").
+
+What it does: The service layer acts as the coordinator. It intercepts the call and prepares to apply any business rules or validation checks.
+
+#### 2. Second File: `InMemoryCourseRepository.java` (or `CourseRepository.java`)
+Because the service doesn't manage data directly, it immediately hands off the lookup request to the repository layer by executing courseRepository.findById("C004").
+
+What it does: The repository layer directly manages access to the raw data storage (the LinkedHashMap). It locates the key "C004" and wraps the outcome into a Java Optional.
+
+#### 3. Third File: `Course.java`
+The repository extracts the actual matching instance from memory. The request finishes inside the service layer as it unpacks the object from its Optional container.
+
+What it does: The execution flow returns the physical Course entity payload back to the main method runner, allowing you to access its properties like .getTitle() or .getDurationHours().
