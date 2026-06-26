@@ -104,3 +104,14 @@ For beginners, the loop version is often easier to read because it outlines expl
 
 The .filter() method acts as a gatekeeper or checklist condition. It accepts a true/false condition (a Predicate) and applies it to every item passing through the stream conveyor belt. If an element evaluates to true, it is kept in the stream and moves down the line. If it evaluates to false, it is immediately discarded.
 
+## Day 3 Exercise 06
+
+#### How is StudentService similar to CourseService?
+
+StudentService follows the exact same 3-tier enterprise pattern as CourseService. Neither class communicates directly with a data persistence tool or directly manages raw memory collections. Instead, both accept an abstract Repository interface contract through dependency injection via their constructors, act as the data validation gatekeeper (enforcing unique IDs and processing edge-case validation checks), and escalate errors upward using custom exceptions rather than hardcoding terminal print statements.
+
+#### Which file stores students temporarily while the program is running?
+
+Students are stored in memory within 'InMemoryStudentRepository.java' inside its private 'students' LinkedHashMap collection field. The Service class holds no data instances directly.
+
+
