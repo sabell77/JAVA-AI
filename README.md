@@ -93,3 +93,14 @@ A Java constructor must have the exact same name as the class and does not decla
 Putting scheduling data inside 'Course' creates a 1:1 limitation, meaning a course could only ever be taught once. 
 
 By separating them out into a 'CourseOffering' class using composition, a single blueprint 'Course' (e.g., Java Fundamentals) can be reused infinitely across different intakes, different dates, different locations, and different instructors without duplicating the core metadata (title, syllabus, description, credit hours). 
+
+## Day 3 Exercise 05
+
+#### Which version is easier to understand: loop or stream? Why?
+
+For beginners, the loop version is often easier to read because it outlines explicit, step-by-step instructions (imperative): it creates an empty list, opens an iterative loop, tests an expression, and appends data.
+
+#### What does filter() do in a stream?
+
+The .filter() method acts as a gatekeeper or checklist condition. It accepts a true/false condition (a Predicate) and applies it to every item passing through the stream conveyor belt. If an element evaluates to true, it is kept in the stream and moves down the line. If it evaluates to false, it is immediately discarded.
+
