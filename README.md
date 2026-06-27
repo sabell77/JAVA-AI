@@ -160,3 +160,9 @@ Arrow functions are a cornerstone of modern React development. React relies heav
 #### What does the DOM allow JavaScript to do?
 
 The DOM (Document Object Model) acts as a live API bridge that connects a static HTML web page to JavaScript. It represents the structural document as a tree model of object nodes. This allows JavaScript to actively read, construct, modify, or delete HTML elements and CSS properties in real-time, change element contents, and attach interactive event listeners directly without needing to reload the entire web page.
+
+## Day 4 Exercise 06
+
+#### How is JavaScript filter used in a search feature?
+
+In a search feature, JavaScript's '.filter()' method takes a user input string (the search query) and tests it against every object within an existing data array. It acts as an automated gatekeeper: it loops through the main list and runs a evaluation test (like '.includes()') on a target property like 'studentName'. If the query matches, that student object returns true and is compiled into a brand new filtered array, which is then passed to our rendering function to update the web browser UI layout.
