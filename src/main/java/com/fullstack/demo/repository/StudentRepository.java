@@ -9,4 +9,4 @@ public interface StudentRepository {
     Optional<Student> findById(String studentId);
     List<Student> findAll();
     boolean existsById(String studentId);
-}
+} 
