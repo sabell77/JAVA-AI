@@ -122,3 +122,8 @@ In Java, objects are heavily structured, static, and class-based. Before an obje
 
 In JavaScript, objects are dynamic dictionary-like structures (key-value maps). You can create them instantly on the fly using object literals '{}' without writing a class file blueprint, and you are free to add, modify, or delete properties from them at any time during program execution.
 
+## Day 4 Exercise 02
+
+#### How is a JavaScript array similar to Java ArrayList?
+
+A JavaScript array is structurally similar to a Java ArrayList because both are dynamic data structures. Unlike traditional fixed-size Java arrays, neither requires you to declare a static storage capacity upfront. Both automatically resize themselves in memory as elements are added or removed, and both use simple zero-based indexes to track element order.
