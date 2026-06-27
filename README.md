@@ -154,3 +154,9 @@ Arrow functions are a cornerstone of modern React development. React relies heav
 #### 5. What is the difference between shift and unshift?
 * shift() removes the element from the very front (index 0) of the array.
 * unshift() adds a brand new element to the front (index 0) of the array, shifting all remaining elements to a higher index.
+
+## Day 4 Exercise 05
+
+#### What does the DOM allow JavaScript to do?
+
+The DOM (Document Object Model) acts as a live API bridge that connects a static HTML web page to JavaScript. It represents the structural document as a tree model of object nodes. This allows JavaScript to actively read, construct, modify, or delete HTML elements and CSS properties in real-time, change element contents, and attach interactive event listeners directly without needing to reload the entire web page.
