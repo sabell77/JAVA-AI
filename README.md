@@ -127,3 +127,9 @@ In JavaScript, objects are dynamic dictionary-like structures (key-value maps). 
 #### How is a JavaScript array similar to Java ArrayList?
 
 A JavaScript array is structurally similar to a Java ArrayList because both are dynamic data structures. Unlike traditional fixed-size Java arrays, neither requires you to declare a static storage capacity upfront. Both automatically resize themselves in memory as elements are added or removed, and both use simple zero-based indexes to track element order.
+
+## Day 4 Exercise 03
+
+#### Why are arrow functions important before learning React?
+
+Arrow functions are a cornerstone of modern React development. React relies heavily on functional components, hook configurations, and array manipulation utilities (like `.map()`, `.filter()`, and `.find()`). Arrow functions provide a highly concise, readable layout for these operations. Additionally, arrow functions do not bind their own 'this' context; instead, they lexically inherit 'this' from their surrounding scope, preventing common scope bugs when dealing with event listeners, asynchronous states, and component updates.
