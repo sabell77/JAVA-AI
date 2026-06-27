@@ -133,3 +133,24 @@ A JavaScript array is structurally similar to a Java ArrayList because both are 
 #### Why are arrow functions important before learning React?
 
 Arrow functions are a cornerstone of modern React development. React relies heavily on functional components, hook configurations, and array manipulation utilities (like `.map()`, `.filter()`, and `.find()`). Arrow functions provide a highly concise, readable layout for these operations. Additionally, arrow functions do not bind their own 'this' context; instead, they lexically inherit 'this' from their surrounding scope, preventing common scope bugs when dealing with event listeners, asynchronous states, and component updates.
+
+## Day 4 Exercise 04
+
+#### 1. What is the difference between filter, find, and map?
+
+* filter(): Scans the entire array and extracts multiple matching items into a brand-new array based on a condition.
+* find(): Scans the array and immediately stops when it finds the first match, returning only that single object element (or undefined).
+* map(): Runs through every index and transforms data into a new format, returning a new array of identical length.
+
+#### 2. Which four array methods change the original array?
+* push(), pop(), shift(), and unshift()
+
+#### 3. What does push return?
+* It returns a number representing the new length of the modified array.
+
+#### 4. What does pop return?
+* It returns the specific element/object that was stripped away from the end of the array.
+
+#### 5. What is the difference between shift and unshift?
+* shift() removes the element from the very front (index 0) of the array.
+* unshift() adds a brand new element to the front (index 0) of the array, shifting all remaining elements to a higher index.
