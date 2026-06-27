@@ -114,4 +114,11 @@ StudentService follows the exact same 3-tier enterprise pattern as CourseService
 
 Students are stored in memory within 'InMemoryStudentRepository.java' inside its private 'students' LinkedHashMap collection field. The Service class holds no data instances directly.
 
+## Day 4 Exercise 01
+
+#### What is one difference between a Java object and a JavaScript object?
+
+In Java, objects are heavily structured, static, and class-based. Before an object can exist, you must pre-define its rigid layout schema inside a compiled Class file, and you cannot easily add new properties to that object dynamically at runtime. 
+
+In JavaScript, objects are dynamic dictionary-like structures (key-value maps). You can create them instantly on the fly using object literals '{}' without writing a class file blueprint, and you are free to add, modify, or delete properties from them at any time during program execution.
 
