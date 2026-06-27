@@ -166,3 +166,25 @@ The DOM (Document Object Model) acts as a live API bridge that connects a static
 #### How is JavaScript filter used in a search feature?
 
 In a search feature, JavaScript's '.filter()' method takes a user input string (the search query) and tests it against every object within an existing data array. It acts as an automated gatekeeper: it loops through the main list and runs a evaluation test (like '.includes()') on a target property like 'studentName'. If the query matches, that student object returns true and is compiled into a brand new filtered array, which is then passed to our rendering function to update the web browser UI layout.
+
+## Day 4 Exercise 07
+
+#### 1. What does async mean?
+
+The 'async' keyword marks a function as asynchronous, signaling to the engine that it contains operations that require a waiting period to resolve (such as network file requests). It forces the function to automatically return a Promise object.
+
+#### 2. What does await do?
+
+The 'await' expression cleanly pauses code execution inside an 'async' function until a targeted Promise resolves, ensuring your program does not pass a line until the critical data returns from the server thread.
+
+#### 3. What does fetch do?
+
+The `fetch()` method starts an HTTP request process to extract external data resource files from a specific endpoint url path or file resource system link.
+
+#### 4. Why do we use fetch before connecting to a real backend API?
+
+Fetch architectures function exactly the same way whether extracting records from a static local mock file ('students.json') or a live microservice context endpoint ('http://localhost:8080/api'). Learning it now structures our client application handling flow safely before adding database or backend variables.
+
+#### 5. Why should this exercise be run using Live Server?
+
+Modern browsers block requests to file paths ('file:///') due to CORS security rules. Running your project via Live Server provisions a local 'http://localhost' environment, enabling secure networking channels for your script assets.
