@@ -7,6 +7,12 @@
 <body>
   <h1>Event Preview</h1>
 
+  <div style="margin: 20px 0; padding: 10px; background-color: #f5f5f5; border-radius: 4px; display: inline-block;">
+    <input type="text" id="searchIdInput" placeholder="Enter Event ID (e.g. EV001)">
+    <button onclick="searchEventById(document.getElementById('searchIdInput').value)">Search Event</button>
+    <button onclick="loadAllEvents()">View All Events</button>
+  </div>
+
   <p id="statusText">Events not displayed yet.</p>
 
   <ul id="eventList"></ul>
