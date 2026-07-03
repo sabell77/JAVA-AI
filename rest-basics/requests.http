@@ -1,38 +1,85 @@
-### Request 1: Successful request that returns a list (200 OK)
-GET http://localhost:8081/api/course-offerings
+#################################################################
+# DAY 5 FINAL EXERCISE: BOOKING SYSTEM API TESTING SPECIFICATION
+#################################################################
 
-###
+### 1. Get All Bookings (Part C)
+# Expected Status: 200 OK
+# Expected Response: Empty array [] initially, or list of bookings.
+GET http://localhost:8081/api/bookings
 
-### Request 2: Successful request that returns one item (200 OK)
-GET http://localhost:8081/api/course-offerings/CO001
+---
 
-###
-
-### Request 3: Request for an item that does not exist (404 Not Found)
-GET http://localhost:8081/api/course-offerings/CO999
-
-###
-
-### Request 4: Successful create request (201 Created)
-POST http://localhost:8081/api/course-offerings
+### 2. Create a Valid Booking (Part E)
+# Expected Status: 201 Created
+# Expected Response: Booking object with ID "BK001" and status "CONFIRMED"
+# Business Impact: Will reduce EV001 available seats from 120 to 118 (Part H)
+POST http://localhost:8081/api/bookings
 Content-Type: application/json
 
 {
-  "courseTitle": "Next.js Advanced Layouts",
-  "instructorName": "Mr Kumar",
-  "startDate": "2026-09-10",
-  "capacity": 15
+  "eventId": "EV001",
+  "participantName": "Rahim Gonzalez",
+  "participantEmail": "rahim@example.com",
+  "seats": 2
 }
 
-###
+---
 
-### Request 5: Failed create request due to validation (400 Bad Request)
-POST http://localhost:8081/api/course-offerings
+### 3. Get One Specific Booking by ID (Part D)
+# Expected Status: 200 OK
+# Expected Response: The booking record details for BK001 matching Test 2
+GET http://localhost:8081/api/bookings/BK001
+
+---
+
+### 4. Create a Booking with Missing/Invalid Fields (Part B Validation)
+# Expected Status: 400 Bad Request
+# Expected Response: Error array flagging that "seats" must be greater than 0
+POST http://localhost:8081/api/bookings
 Content-Type: application/json
 
 {
-  "courseTitle": "",
-  "instructorName": "Ms Lee",
-  "startDate": "2026-09-10",
-  "capacity": 0
+  "eventId": "EV001",
+  "participantName": "Rahim Gonzalez",
+  "participantEmail": "rahim@example.com",
+  "seats": 0
 }
+
+---
+
+### 5. Create a Booking with an Invalid Event ID (Part F Validation)
+# Expected Status: 404 Not Found
+# Expected Response: {"message": "Event EV999 was not found"}
+POST http://localhost:8081/api/bookings
+Content-Type: application/json
+
+{
+  "eventId": "EV999",
+  "participantName": "Rahim Gonzalez",
+  "participantEmail": "rahim@example.com",
+  "seats": 2
+}
+
+---
+
+### 6. Create a Booking with Too Many Seats (Part G Capacity Validation)
+# Expected Status: 400 Bad Request
+# Expected Response: {"message": "Not enough seats available"}
+# Context: EV002 only has 35 seats available from bootup
+POST http://localhost:8081/api/bookings
+Content-Type: application/json
+
+{
+  "eventId": "EV002",
+  "participantName": "Rahim Gonzalez",
+  "participantEmail": "rahim@example.com",
+  "seats": 100
+}
+
+---
+
+### 7. Optional Task: Cancel Booking via DELETE
+# Expected Status: 200 OK
+# Expected Response: Booking details showing status updated to "CANCELLED"
+# Business Impact: Restores the 2 seats back to event EV001 stock count
+DELETE http://localhost:8081/api/bookings/BK001
