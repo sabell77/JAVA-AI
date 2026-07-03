@@ -1,0 +1,38 @@
+### Request 1: Successful request that returns a list (200 OK)
+GET http://localhost:8081/api/course-offerings
+
+###
+
+### Request 2: Successful request that returns one item (200 OK)
+GET http://localhost:8081/api/course-offerings/CO001
+
+###
+
+### Request 3: Request for an item that does not exist (404 Not Found)
+GET http://localhost:8081/api/course-offerings/CO999
+
+###
+
+### Request 4: Successful create request (201 Created)
+POST http://localhost:8081/api/course-offerings
+Content-Type: application/json
+
+{
+  "courseTitle": "Next.js Advanced Layouts",
+  "instructorName": "Mr Kumar",
+  "startDate": "2026-09-10",
+  "capacity": 15
+}
+
+###
+
+### Request 5: Failed create request due to validation (400 Bad Request)
+POST http://localhost:8081/api/course-offerings
+Content-Type: application/json
+
+{
+  "courseTitle": "",
+  "instructorName": "Ms Lee",
+  "startDate": "2026-09-10",
+  "capacity": 0
+}
