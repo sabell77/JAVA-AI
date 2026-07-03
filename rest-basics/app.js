@@ -1,43 +1,68 @@
-const events = [
-  {
-    id: "EV001",
-    title: "Tech Career Fair",
-    date: "2026-08-10",
-    venue: "Kuala Lumpur Convention Centre",
-    availableSeats: 120
-  },
-  {
-    id: "EV002",
-    title: "Web Development Bootcamp",
-    date: "2026-08-15",
-    venue: "Digital Learning Hub",
-    availableSeats: 35
-  },
-  {
-    id: "EV003",
-    title: "AI for Business Workshop",
-    date: "2026-08-20",
-    venue: "Innovation Centre",
-    availableSeats: 50
-  }
-];
-
 const eventListEl = document.getElementById("eventList");
 const statusTextEl = document.getElementById("statusText");
 
-events.forEach(event => {
-  const listItem = document.createElement("li");
+const BASE_URL = "http://localhost:8081/api/course-offerings";
 
-  let eventText = `${event.title} - ${event.date} - ${event.venue} - ${event.availableSeats} seats available`;
+async function loadAllEvents() {
+  statusTextEl.textContent = "Loading events from API...";
+  eventListEl.innerHTML = ""; // Clear existing UI contents
 
-  
-  if (event.availableSeats < 50) {
-    eventText += " - Limited seats";
+  try {
+    const response = await fetch(BASE_URL);
+
+    if (!response.ok) {
+      throw new Error(`Server returned status: ${response.status}`);
+    } 
+
+    const events = await response.json();
+
+    events.forEach(event => {
+      const listItem = document.createElement("li");
+      listItem.textContent = `${event.courseTitle} - ${event.startDate} - Instructor: ${event.instructorName} - ${event.capacity} capacity`;
+      eventListEl.appendChild(listItem);
+    });
+
+    statusTextEl.textContent = `Successfully loaded ${events.length} event(s).`;
+
+  } catch (error) {
+    console.error("Fetch operational failure:", error);
+    statusTextEl.textContent = "Error: Failed to fetch event records from backend API server.";
   }
- 
-  listItem.textContent = eventText;
+}
 
-  eventListEl.appendChild(listItem);
-});
+async function searchEventById(eventId) {
+  if (!eventId.trim()) {
+    statusTextEl.textContent = "Please provide a valid Event ID.";
+    return;
+  }
 
-statusTextEl.textContent = `${events.length} event(s) displayed.`;
+  statusTextEl.textContent = `Searching for Event ID: ${eventId}...`;
+  eventListEl.innerHTML = "";
+
+  try {
+    const response = await fetch(`${BASE_URL}/${eventId}`);
+
+    if (response.status === 404) {
+      statusTextEl.textContent = `Notice: Event with ID '${eventId}' does not exist.`;
+      return;
+    }
+
+    if (!response.ok) {
+      throw new Error(`API returned status code: ${response.status}`);
+    }
+
+    const event = await response.json();
+
+    const listItem = document.createElement("li");
+    listItem.style.fontWeight = "bold";
+    listItem.textContent = `${event.courseTitle} - ${event.startDate} - Instructor: ${event.instructorName} - ${event.capacity} capacity`;
+    eventListEl.appendChild(listItem);
+
+    statusTextEl.textContent = "Found matching event record successfully!";
+
+  } catch (error) {
+    statusTextEl.textContent = "Error: Failed to process event identification search.";
+  }
+}
+
+loadAllEvents();
