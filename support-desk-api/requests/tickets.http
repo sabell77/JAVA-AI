@@ -37,3 +37,41 @@ Accept: application/json
 ### 7. Paginated & Sorted Tickets - Newest First
 GET http://localhost:8080/api/tickets/paged?page=0&size=5&sortBy=createdAt&direction=desc
 Accept: application/json
+
+### ====================================================================
+### DAY 8 EXERCISE 5: EDGE CASES & TROUBLESHOOTING
+### ====================================================================
+
+### Test 1: Invalid Status Value
+GET http://localhost:8080/api/tickets?status=INVALID
+Accept: application/json
+
+###
+
+### Test 2: Invalid Priority Value
+GET http://localhost:8080/api/tickets?priority=URGENT
+Accept: application/json
+
+###
+
+### Test 3: Page Number with No Records
+GET http://localhost:8080/api/tickets/paged?page=99&size=5
+Accept: application/json
+
+###
+
+### Test 4: Very Large Page Size
+GET http://localhost:8080/api/tickets/paged?page=0&size=100
+Accept: application/json
+
+###
+
+### Test 5: Unknown Sort Field
+GET http://localhost:8080/api/tickets/paged?page=0&size=5&sortBy=unknownField&direction=asc
+Accept: application/json
+
+###
+
+### Test 6: Combined Filters (Overlapping Params)
+GET http://localhost:8080/api/tickets?status=OPEN&priority=HIGH
+Accept: application/json
