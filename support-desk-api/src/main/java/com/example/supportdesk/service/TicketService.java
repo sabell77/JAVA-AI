@@ -1,49 +1,47 @@
 package com.example.supportdesk.service;
 
-import com.example.supportdesk.dto.CreateTicketRequest;
 import com.example.supportdesk.dto.TicketResponse;
-import com.example.supportdesk.exception.ResourceNotFoundException;
+import com.example.supportdesk.model.Ticket;
+import com.example.supportdesk.repository.TicketRepository;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
-import java.util.ArrayList;
+import org.springframework.web.server.ResponseStatusException;
 import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 public class TicketService {
 
-    private final List<TicketResponse> tickets = new ArrayList<>(List.of(
-        new TicketResponse("T001", "Cannot access email", "User cannot login to company email account.", "Email", "HIGH", "OPEN", "amir@example.com", "2026-07-03"),
-        new TicketResponse("T002", "Laptop is slow", "The machine takes 20 minutes to boot up.", "Hardware", "MEDIUM", "OPEN", "sara@example.com", "2026-07-04"),
-        new TicketResponse("T003", "VPN connection not working", "Getting timeout errors connecting from home.", "Network", "HIGH", "OPEN", "john@example.com", "2026-07-05")
-    ));
+    private final TicketRepository ticketRepository;
+
+    public TicketService(TicketRepository ticketRepository) {
+        this.ticketRepository = ticketRepository;
+    }
 
     public List<TicketResponse> getAllTickets() {
-        return tickets;
+        return ticketRepository.findAll()
+                .stream()
+                .map(this::convertToDto)
+                .collect(Collectors.toList());
     }
 
     public TicketResponse getTicketById(String id) {
-        return tickets.stream()
-                .filter(ticket -> ticket.id().equalsIgnoreCase(id))
-                .findFirst()
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket " + id + " was not found"));
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResponseStatusException(
+                        HttpStatus.NOT_FOUND, "Ticket not found with id: " + id));
+        return convertToDto(ticket);
     }
 
-    public TicketResponse createTicket(CreateTicketRequest request) {
-        // Auto-generate ID based on current list size (e.g., T004)
-        String nextId = "T" + String.format("%03d", tickets.size() + 1);
-        String fixedDate = "2026-07-10"; 
-
-        TicketResponse newTicket = new TicketResponse(
-                nextId,
-                request.title(),
-                request.description(),
-                request.category(),
-                request.priority(),
-                "OPEN", // Default status requested
-                request.createdBy(),
-                fixedDate
+    private TicketResponse convertToDto(Ticket ticket) {
+        return new TicketResponse(
+                ticket.getId(),
+                ticket.getTitle(),
+                ticket.getDescription(),
+                ticket.getCategory(),
+                ticket.getPriority(),
+                ticket.getStatus(),
+                ticket.getCreatedBy(),
+                ticket.getCreatedAt() != null ? ticket.getCreatedAt().toString() : null
         );
-
-        tickets.add(newTicket);
-        return newTicket;
     }
 }
