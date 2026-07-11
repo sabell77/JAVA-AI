@@ -7,7 +7,6 @@ import com.example.supportdesk.repository.TicketRepository;
 import org.springframework.stereotype.Service;
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.stream.Collectors;
 
 @Service
 public class TicketService {
@@ -38,10 +37,23 @@ public class TicketService {
         return mapToResponseDTO(savedTicket);
     }
 
-    public List<TicketResponse> getAllTickets() {
-        return ticketRepository.findAll().stream()
+    public List<TicketResponse> getAllTickets(String status, String priority, String category) {
+        List<Ticket> tickets;
+
+        if (status != null && !status.isEmpty()) {
+            tickets = ticketRepository.findByStatus(status);
+        } else if (priority != null && !priority.isEmpty()) {
+            tickets = ticketRepository.findByPriority(priority);
+        } else if (category != null && !category.isEmpty()) {
+            tickets = ticketRepository.findByCategory(category);
+        } else {
+            tickets = ticketRepository.findAll();
+        }
+
+        // Map the internal Ticket entities to clean TicketResponse DTO records
+        return tickets.stream()
                 .map(this::mapToResponseDTO)
-                .collect(Collectors.toList());
+                .toList();
     }
 
     // Helper method to convert Model -> Response DTO

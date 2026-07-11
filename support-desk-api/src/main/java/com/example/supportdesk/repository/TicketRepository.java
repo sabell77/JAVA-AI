@@ -2,7 +2,10 @@ package com.example.supportdesk.repository;
 
 import com.example.supportdesk.model.Ticket;
 import org.springframework.data.mongodb.repository.MongoRepository;
+import java.util.List;
 
 public interface TicketRepository extends MongoRepository<Ticket, String> {
-    // Basic CRUD operations are inherited automatically from MongoRepository
+    List<Ticket> findByStatus(String status);
+    List<Ticket> findByPriority(String priority);
+    List<Ticket> findByCategory(String category);
 }

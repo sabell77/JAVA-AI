@@ -28,7 +28,12 @@ public class TicketController {
     }
 
     @GetMapping
-    public ResponseEntity<List<TicketResponse>> getAllTickets() {
-        return ResponseEntity.ok(ticketService.getAllTickets());
+    public ResponseEntity<List<TicketResponse>> getAllTickets(
+            @RequestParam(required = false) String status,
+            @RequestParam(required = false) String priority,
+            @RequestParam(required = false) String category) {
+        
+        List<TicketResponse> tickets = ticketService.getAllTickets(status, priority, category);
+        return ResponseEntity.ok(tickets);
     }
 }
