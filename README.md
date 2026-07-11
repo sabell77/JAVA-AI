@@ -217,3 +217,22 @@ MongoDB automatically stores a unique field named "_id", which contains a unique
 
 **4. Why should the controller not talk directly to MongoDB?**  
 The controller's sole responsibility is handling incoming HTTP requests, managing routing, and structuring outgoing responses. Bypassing the service layer to talk directly to the repository violates the separation of concerns principle, making business rules rigid, preventing code reuse, and complicating unit testing.
+
+## Day 8 Exercise 04 - Query Test File and Notes
+
+**1. Which query parameters did you implement?**  
+(GET /api/tickets): `status`, `priority`, and `category`  
+For the pagination route (GET /api/tickets/paged), we configured `page`, `size`, `sortBy`, and `direction`.
+
+**2. Which fields did you index?**  
+@Indexed annotations to `title`, `description`, `category`, `priority`, `status`, and `createdBy`
+
+**3. Why should an API use pagination?**  
+An API must use pagination to optimize performance, save system memory, and cut down network payload sizes.
+
+**4. What log messages appear when you call the filtering endpoint?**  
+2026-07-11T15:55:33.633+08:00  INFO 15840 --- [support-desk-api] [nio-8080-exec-1] c.e.supportdesk.service.TicketService    : Fetching filtered tickets. Query params received -> status: 'null', priority: 'null', category: 'null'  
+2026-07-11T15:55:33.651+08:00  INFO 15840 --- [support-desk-api] [nio-8080-exec-1] c.e.supportdesk.service.TicketService    : Filtering operation complete. Returned 5 matching records from MongoDB.
+
+**5. What endpoint proves your sorting works?**  
+GET `http://localhost:8080/api/tickets/paged?page=0&size=5&sortBy=createdAt&direction=desc`

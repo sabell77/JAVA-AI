@@ -1,23 +1,39 @@
-### Get All Tickets (No Filters)
+### 1. Get All Tickets (Unfiltered)
 GET http://localhost:8080/api/tickets
+Accept: application/json
 
-### Filter by Status
+###
+
+### 2. Filter by Status (OPEN)
 GET http://localhost:8080/api/tickets?status=OPEN
+Accept: application/json
 
-### Filter by Priority
+###
+
+### 3. Filter by Priority (HIGH)
 GET http://localhost:8080/api/tickets?priority=HIGH
+Accept: application/json
 
-### Filter by Category
+###
+
+### 4. Filter by Category (Email)
 GET http://localhost:8080/api/tickets?category=Email
+Accept: application/json
 
-### Get Paged Tickets (Uses defaults: Page 0, Size 5, Newest First)
-GET http://localhost:8080/api/tickets/paged
+###
 
-### Get Paged Tickets (Page 0, explicitly sized to 2 items)
-GET http://localhost:8080/api/tickets/paged?page=0&size=2
+### 5. Paginated Tickets - Page 0 (First 5 Items)
+GET http://localhost:8080/api/tickets/paged?page=0&size=5
+Accept: application/json
 
-### Get Paged Tickets (Page 1, showing the next 2 items)
-GET http://localhost:8080/api/tickets/paged?page=1&size=2
+###
 
-### Custom Sort: Page 0, oldest tickets first
-GET http://localhost:8080/api/tickets/paged?page=0&size=5&sortBy=createdAt&direction=asc
+### 6. Paginated Tickets - Page 1 (Next 5 Items)
+GET http://localhost:8080/api/tickets/paged?page=1&size=5
+Accept: application/json
+
+###
+
+### 7. Paginated & Sorted Tickets - Newest First
+GET http://localhost:8080/api/tickets/paged?page=0&size=5&sortBy=createdAt&direction=desc
+Accept: application/json
