@@ -1,26 +1,46 @@
 package com.example.supportdesk.model;
 
 import org.springframework.data.annotation.Id;
+import org.springframework.data.mongodb.core.index.Indexed;
+import org.springframework.data.mongodb.core.index.CompoundIndex;
+import org.springframework.data.mongodb.core.index.CompoundIndexes;
 import org.springframework.data.mongodb.core.mapping.Document;
+import java.time.LocalDateTime;
 
 @Document(collection = "tickets")
+// Compound index optimizing filtering by status while sorting by newest creation date
+@CompoundIndexes({
+    @CompoundIndex(name = "status_createdAt_idx", def = "{'status': 1, 'createdAt': -1}")
+})
 public class Ticket {
 
     @Id
     private String id;
+
+    @Indexed
     private String title;
+
+    @Indexed
     private String description;
+
+    @Indexed
     private String category;
+
+    @Indexed
     private String priority;
+
+    @Indexed
     private String status;
+
+    @Indexed
     private String createdBy;
-    private String createdAt;
+    private LocalDateTime createdAt;
 
     // Default Constructor (Required by Spring Data/MongoDB)
     public Ticket() {}
 
     // All-Arguments Constructor
-    public Ticket(String id, String title, String description, String category, String priority, String status, String createdBy, String createdAt) {
+    public Ticket(String id, String title, String description, String category, String priority, String status, String createdBy, LocalDateTime createdAt) {
         this.id = id;
         this.title = title;
         this.description = description;
@@ -53,6 +73,6 @@ public class Ticket {
     public String getCreatedBy() { return createdBy; }
     public void setCreatedBy(String createdBy) { this.createdBy = createdBy; }
 
-    public String getCreatedAt() { return createdAt; }
-    public void setCreatedAt(String createdAt) { this.createdAt = createdAt; }
+    public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 }

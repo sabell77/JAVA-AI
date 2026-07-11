@@ -1,5 +1,7 @@
 package com.example.supportdesk.dto;
 
+import java.time.LocalDateTime;
+
 public record TicketResponse(
     String id,
     String title,
@@ -8,5 +10,5 @@ public record TicketResponse(
     String priority,
     String status,
     String createdBy,
-    String createdAt
+    LocalDateTime createdAt
 ) {}
