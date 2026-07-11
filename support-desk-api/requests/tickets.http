@@ -1,0 +1,30 @@
+### Test a valid request (Should return 201 Created)
+POST http://localhost:8082/api/tickets
+Content-Type: application/json
+
+{
+  "title": "Cannot access email",
+  "description": "User cannot login to company email account.",
+  "category": "Email",
+  "priority": "HIGH",
+  "createdBy": "amir@example.com"
+}
+
+###
+
+### Test an invalid request (Should return 400 Bad Request)
+POST http://localhost:8082/api/tickets
+Content-Type: application/json
+
+{
+  "title": "",
+  "description": "",
+  "category": "",
+  "priority": "",
+  "createdBy": ""
+}
+
+###
+
+### Verify all items are persisted
+GET http://localhost:8082/api/tickets
