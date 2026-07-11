@@ -9,3 +9,15 @@ GET http://localhost:8080/api/tickets?priority=HIGH
 
 ### Filter by Category
 GET http://localhost:8080/api/tickets?category=Email
+
+### Get Paged Tickets (Uses defaults: Page 0, Size 5, Newest First)
+GET http://localhost:8080/api/tickets/paged
+
+### Get Paged Tickets (Page 0, explicitly sized to 2 items)
+GET http://localhost:8080/api/tickets/paged?page=0&size=2
+
+### Get Paged Tickets (Page 1, showing the next 2 items)
+GET http://localhost:8080/api/tickets/paged?page=1&size=2
+
+### Custom Sort: Page 0, oldest tickets first
+GET http://localhost:8080/api/tickets/paged?page=0&size=5&sortBy=createdAt&direction=asc
