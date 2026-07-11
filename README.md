@@ -188,3 +188,32 @@ Fetch architectures function exactly the same way whether extracting records fro
 #### 5. Why should this exercise be run using Live Server?
 
 Modern browsers block requests to file paths ('file:///') due to CORS security rules. Running your project via Live Server provisions a local 'http://localhost' environment, enabling secure networking channels for your script assets.
+
+
+## Day 7 Exercise 05 - Persistence Checkpoint
+
+### Part 1: Verification Steps & Results
+1. Started local MongoDB instance and initiated the Support Desk API on port 8080.
+2. Sent a POST request to add a new support ticket.
+3. Verified initial persistence by executing a GET request.
+4. Stopped the Spring Boot runtime application entirely to clear memory caching.
+5. Restarted the Spring Boot application on port 8080 and re-ran the GET request.
+
+* Persisted Ticket ID: 6a51c0ee4fe0e32908c8d85b
+* Post-Restart Status: Confirmed. The target document successfully persisted in the MongoDB collection across the application restart boundary.
+
+---
+
+### Part 2: Reflection Answers
+
+**1. What is the role of the repository?**  
+The repository layer acts as a data access abstraction bridge between the application's business logic and the database. By extending MongoRepository, it encapsulates low-level query implementation and automatically maps database actions (like saving or retrieving data) into standard Java methods.
+
+**2. What is the difference between Ticket and TicketResponse?**  
+Ticket represents the internal database entity model that directly maps to the collection structure in MongoDB. TicketResponse is an immutable Data Transfer Object (DTO) designed to serve as a clean, public-facing representation of the data for API clients, effectively isolating database schemas from the web layer.
+
+**3. What does MongoDB store as the document ID?**  
+MongoDB automatically stores a unique field named "_id", which contains a unique 12-byte BSON ObjectId (represented as a 24-character hexadecimal string). It includes structural details like a creation timestamp, machine identifier, process ID, and a counter to guarantee global uniqueness.
+
+**4. Why should the controller not talk directly to MongoDB?**  
+The controller's sole responsibility is handling incoming HTTP requests, managing routing, and structuring outgoing responses. Bypassing the service layer to talk directly to the repository violates the separation of concerns principle, making business rules rigid, preventing code reuse, and complicating unit testing.
