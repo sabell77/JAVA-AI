@@ -1,0 +1,47 @@
+### ====================================================================
+### DAY 9 EXERCISE 2: AUTHENTICATION TESTS
+### ====================================================================
+
+### 1. Register Success
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Aliyah",
+  "email": "aliyah@company.com",
+  "password": "SecurePassword123"
+}
+
+###
+
+### 2. Login Success
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "jane.doe@company.com",
+  "password": "SecurePassword123"
+}
+
+###
+
+### 3. Duplicate Email Error
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Another Jane",
+  "email": "jane.doe@company.com",
+  "password": "DifferentPassword123"
+}
+
+###
+
+### 4. Wrong Password Error
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "jane.doe@company.com",
+  "password": "WrongPasswordAttempt"
+}
