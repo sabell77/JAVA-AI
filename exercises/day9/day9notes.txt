@@ -1,0 +1,49 @@
+DAY 9: Authentication & Authorisation 
+
+Day 7: MongoDB
+Day 8: queries, pagination, indexes, logging, handing duplicates
+Day 9: secure our API
+
+Should anyone on the internet be able to create assets/entries into our system?
+We need to implement login and permission checks
+
+By end of today:
+1. Explain the differences between Authentication and Authorisation
+2. Password hashing, and why that's important
+3. Register a user using a backend endpoint
+4. Implement login JWT
+5. JWT send it using Authortization: Bearer
+6. Protect API endpoints using Spring Security
+7. Apply simple RBAC (Role-based access control)
+8. Test public, authenticated, rbac protected endpoints 
+
+================================= KEY CONCEPTS =================================
+
+1. Authentication vs Authorisation
+Authentication: Who are you? e.g. A user who logins successfully.
+Authorisation: What are you allowed to do? The user might not be allowed to create/delete items. 
+
+2. Password hashing
+NEVER store passwords in plain text
+User pwd -> BCrypt hashing -> passwordHash stored in the db
+Whenever a user logs in, Spring Security compare the entered pwd against the stored hash
+
+3. JWT idea
+JWT JSON Web Token
+Server give the client a signed token after login
+Client send the token in later requests
+Server check the token before allowing any access
+
+4. Client sends a token like this
+Authortization: Bearer <token>
+
+401 vs 403
+401 Unauthorised. User not logged in, or token is missing/invalid
+403 Forbidden. You are logged in, but your role is not allowed to do a certain action
+
+USER and ADMIN
+USER = View assets
+ADMIN = view and create assets
+
+Seed an admin user
+Normal registration creates USER account only
