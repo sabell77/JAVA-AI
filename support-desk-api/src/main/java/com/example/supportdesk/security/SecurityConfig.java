@@ -33,7 +33,6 @@ public class SecurityConfig {
             .cors(cors -> cors.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
-                // 1. Public Endpoints
                 .requestMatchers("/api/health").permitAll()
                 .requestMatchers("/api/auth/register", "/api/auth/login").permitAll()
                 .requestMatchers("/api/auth/**").permitAll()
@@ -41,8 +40,7 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.GET, "/api/tickets", "/api/tickets/**").hasAnyAuthority("ROLE_USER", "ROLE_ADMIN")
                 
                 .requestMatchers(HttpMethod.POST, "/api/tickets", "/api/tickets/**").hasAuthority("ROLE_ADMIN")
-                
-                // 4. Catch-all
+
                 .anyRequest().authenticated()
             )
             // Handle unauthenticated entry points (401)
