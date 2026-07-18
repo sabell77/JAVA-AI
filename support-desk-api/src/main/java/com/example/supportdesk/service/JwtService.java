@@ -1,6 +1,7 @@
 package com.example.supportdesk.service;
 
 import com.example.supportdesk.model.AppUser;
+import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
@@ -14,10 +15,8 @@ import java.util.Map;
 @Service
 public class JwtService {
 
-    // Minimum 256-bit key for HMAC-SHA256 signing
     private final Key key = Keys.secretKeyFor(SignatureAlgorithm.HS256);
     
-    // Token valid for 24 hours
     private final long expirationTimeMs = 86400000;
 
     public String generateToken(AppUser user) {
@@ -32,5 +31,40 @@ public class JwtService {
                 .setExpiration(new Date(System.currentTimeMillis() + expirationTimeMs))
                 .signWith(key)
                 .compact();
+    }
+
+    public Claims extractAllClaims(String token) {
+        return Jwts.parserBuilder()
+                .setSigningKey(key)
+                .build()
+                .parseClaimsJws(token)
+                .getBody();
+    }
+
+    public String extractEmail(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims != null ? claims.getSubject() : null;
+    }
+
+    public String extractRole(String token) {
+        Claims claims = extractAllClaims(token);
+        return claims != null ? claims.get("role", String.class) : null;
+    }
+
+    public boolean isTokenValid(String token) {
+        try {
+            Jwts.parserBuilder().setSigningKey(key).build().parseClaimsJws(token);
+            return !isTokenExpired(token);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean isTokenExpired(String token) {
+        Claims claims = extractAllClaims(token);
+        if (claims == null || claims.getExpiration() == null) {
+            return true;
+        }
+        return claims.getExpiration().before(new Date());
     }
 }

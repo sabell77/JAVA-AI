@@ -45,3 +45,88 @@ Content-Type: application/json
   "email": "jane.doe@company.com",
   "password": "WrongPasswordAttempt"
 }
+
+### ====================================================================
+### DAY 9 EXERCISE 3: ENDPOINT SECURITY TESTS
+### ====================================================================
+
+### 1. GET Tickets - No Token (Expected: 401 Unauthorized)
+GET http://localhost:8080/api/tickets
+
+###
+
+### 2. Register/Login as a USER to get a token
+# @name userLogin
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "jane.doe@company.com",
+  "password": "SecurePassword123"
+}
+
+### Store User Token
+@userToken = {{userLogin.response.body.token}}
+
+###
+
+### 3. GET Tickets - With USER Token (Expected: 200 OK)
+GET http://localhost:8080/api/tickets
+Authorization: Bearer {{userToken}}
+
+###
+
+### 4. POST Ticket - With USER Token (Expected: 403 Forbidden)
+POST http://localhost:8080/api/tickets
+Authorization: Bearer {{userToken}}
+Content-Type: application/json
+
+{
+  "title": "Broken Keyboard",
+  "description": "Keys are stuck",
+  "category": "Hardware"
+}
+
+###
+
+### 5. Register an Admin Account (Run once, adjust database directly if needed)
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Admin User",
+  "email": "admin@company.com",
+  "password": "AdminPassword123"
+}
+
+# (Note: For testing ADMIN, manually/programmatically update admin@company.com's role to "ROLE_ADMIN" in MongoDB)
+
+###
+
+### 6. Login as ADMIN
+# @name adminLogin
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@company.com",
+  "password": "AdminPassword123"
+}
+
+### Store Admin Token
+@adminToken = {{adminLogin.response.body.token}}
+
+###
+
+### 7. POST Ticket - With ADMIN Token (Expected: 201 Created / 200 OK)
+POST http://localhost:8080/api/tickets
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "title": "Database Server Outage",
+  "description": "Server is completely unresponsive.",
+  "category": "Infrastructure",
+  "priority": "HIGH",
+  "createdBy": "admin@company.com"
+}
