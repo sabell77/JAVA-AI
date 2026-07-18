@@ -1,0 +1,136 @@
+DAY 8
+Databases:
+1. Relational       SQL
+2. Non relational   NoSQL: Not SQL/ Not Only SQL
+    Any DB that does not use tables
+    Key Value pairs: assetTag: 'LAP-2026-4721'
+    Graph: MYself ---> My students
+    DOCUMENT databases:
+
+General mongosh syntax:
+db.collection_name.command(args)
+
+
+
+GET /api/assets?status=AVAILABLE
+
+Controller receives:
+status = "AVAILABLE"
+category = null
+location = null
+
+Services does:
+assetRepository.findBy...("AVAILABLE")
+
+Controller collect query params from URL
+
+Service checks which params were provided
+
+Repo perform db search
+
+Spring Data MongoDB
+
+=====================================DAY 9: Authentication & Authorisation=====================================
+
+Day 7: MongoDB
+Day 8: queries, pagination, indexes, logging, handing duplicates
+Day 9: secure our API
+
+Should anyone on the internet be able to create assets/entries into our system?
+We need to implement login and permission checks
+
+By end of today:
+1. Explain the differences between Authentication and Authorisation
+2. Password hashing, and why that's important
+3. Register a user using a backend endpoint
+4. Implement login JWT
+5. JWT send it using Authortization: Bearer
+6. Protect API endpoints using Spring Security
+7. Apply simple RBAC (Role-based access control)
+8. Test public, authenticated, rbac protected endpoints
+
+================================= KEY CONCEPTS =================================
+
+1. Authentication vs Authorisation
+Authentication: Who are you? e.g. A user who logins successfully.
+Authorisation: What are you allowed to do? The user might not be allowed to create/delete items.
+
+2. Password hashing
+NEVER store passwords in plain text
+User pwd -> BCrypt hashing -> passwordHash stored in the db
+Whenever a user logs in, Spring Security compare the entered pwd against the stored hash
+
+3. JWT idea
+JWT JSON Web Token
+Server give the client a signed token after login
+Client send the token in later requests
+Server check the token before allowing any access
+
+4. Client sends a token like this
+Authortization: Bearer <token>
+
+401 vs 403
+401 Unauthorised. User not logged in, or token is missing/invalid
+403 Forbidden. You are logged in, but your role is not allowed to do a certain action
+
+USER and ADMIN
+USER = View assets
+ADMIN = view and create assets
+
+Seed an admin user
+Normal registration creates USER account only
+
+
+
+===================================== Day 10: API Quality: Versioning, Docs, Aggregation =====================================
+
+What does API quality mean?
+An API is not only good because it works. It's good when it is:
+    1. Predictable
+    2. secure
+    3. Documented
+    4. Versioned
+    5. Tesable
+    6. Consistent
+
+VERSIONING
+Means putting a version number in the API path
+/api/v1/assets
+This allows future changes without immediately breaking older clients
+
+DOCUMENTATION
+Documentation tell devs:
+1. What endpoints exist?
+2. What method to use?
+3. What authentication is needed?
+4. What does each endpoint do?
+JSON documentation endpoint
+GET /api/docs
+
+AGGREGATION
+Means asking the db to calculate a summary
+Example: Count number of assets by status 
+Instead of downloading every asset and counting in JavaScript, MongoDB groups and count the records
+
+ERROR CONTRACT
+A good API should return consistent errors
+{
+    "message": "Error message goes here", 
+    "status": 400, 
+    "timestamp": "YYYY-MM-DD-HH-mm-ss"
+    "errors": []
+}
+
+Milestone 1
+By the end of day 10, our backed should now have:
+1. MongoDB persistence
+2. CRUD
+3. Filtering
+4. pagination
+5. Sorting
+6. Indexes
+7. Duplicate handling
+8. JWT auth
+9. RBAC
+19. Versioned routes
+11. Docs endpoint
