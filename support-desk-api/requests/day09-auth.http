@@ -1,0 +1,132 @@
+### 1. Health endpoint is public
+GET http://localhost:8080/api/health
+
+> {%
+    client.test("Health check should be public", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+###
+
+### 2. Ticket endpoint without token returns 401
+GET http://localhost:8080/api/tickets
+
+> {%
+    client.test("Access without token should be unauthorized", function() {
+        client.assert(response.status === 401, "Expected 401 Unauthorized");
+    });
+%}
+
+###
+
+### 3. Register user returns token
+POST http://localhost:8080/api/auth/register
+Content-Type: application/json
+
+{
+  "name": "Jane Doe",
+  "email": "jane.doe@company.com",
+  "password": "Password123"
+}
+
+> {%
+    client.test("Registration successful", function() {
+        client.assert(response.status === 201 || response.status === 200, "Expected 201 Created or 200 OK");
+        client.assert(response.body.hasOwnProperty("token"), "Response should contain a JWT token");
+    });
+%}
+
+###
+
+### 4. Login user returns token
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "jane.doe@company.com",
+  "password": "Password123"
+}
+
+> {%
+    client.test("Login successful and token returned", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+        client.assert(response.body.hasOwnProperty("token"), "Response should contain a JWT token");
+        // Save the regular user token globally
+        client.global.set("user_token", response.body.token);
+    });
+%}
+
+###
+
+### 5. Ticket endpoint with token returns 200
+GET http://localhost:8080/api/tickets
+Authorization: Bearer {{user_token}}
+
+> {%
+    client.test("Authenticated user can fetch tickets", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+    });
+%}
+
+###
+
+### 6. Create ticket with normal USER token returns 403
+POST http://localhost:8080/api/tickets
+Authorization: Bearer {{user_token}}
+Content-Type: application/json
+
+{
+  "title": "My Laptop is broken",
+  "description": "Screen will not turn on.",
+  "category": "Hardware",
+  "priority": "MEDIUM",
+  "createdBy": "jane.doe@company.com"
+}
+
+> {%
+    client.test("Normal user should be forbidden from creating tickets", function() {
+        client.assert(response.status === 403, "Expected 403 Forbidden");
+    });
+%}
+
+###
+
+### 7. Login admin returns token
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{
+  "email": "admin@example.com",
+  "password": "Admin@12345"
+}
+
+> {%
+    client.test("Admin login successful", function() {
+        client.assert(response.status === 200, "Expected 200 OK");
+        client.assert(response.body.hasOwnProperty("token"), "Response should contain a JWT token");
+        
+        client.global.set("admin_token", response.body.token);
+    });
+%}
+
+###
+
+### 8. Create ticket with ADMIN token returns 201
+POST http://localhost:8080/api/tickets
+Authorization: Bearer {{admin_token}}
+Content-Type: application/json
+
+{
+  "title": "Database Server Outage",
+  "description": "Server is completely unresponsive.",
+  "category": "Infrastructure",
+  "priority": "HIGH",
+  "createdBy": "admin@example.com"
+}
+
+> {%
+    client.test("Admin should successfully create a ticket", function() {
+        client.assert(response.status === 201, "Expected 201 Created");
+    });
+%}
