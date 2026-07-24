@@ -22,10 +22,13 @@ public class TicketController {
     }
 
     @PostMapping
-    public ResponseEntity<TicketResponse> createTicket(@Valid @RequestBody CreateTicketRequest request) {
-        TicketResponse createdTicket = ticketService.createTicket(request);
-        // Requirement: Return 201 Created when successful
-        return new ResponseEntity<>(createdTicket, HttpStatus.CREATED);
+    public ResponseEntity<?> createTicket(
+            @RequestBody CreateTicketRequest request,
+            org.springframework.security.core.Authentication authentication
+    ) {
+        String currentUserEmail = authentication.getName();
+        return ResponseEntity.status(HttpStatus.CREATED)
+                .body(ticketService.createTicket(request, currentUserEmail));
     }
 
     @GetMapping

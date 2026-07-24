@@ -36,8 +36,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         System.out.println("Request URI: " + request.getRequestURI());
         System.out.println("Authorization Header: " + authHeader);
 
+        // 1. If no token is provided, proceed down the chain safely (e.g., login/register routes)
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
-            System.out.println("Result: Missing or malformed Authorization header.");
+            System.out.println("Result: Missing or malformed Authorization header. Proceeding down chain.");
             System.out.println("------------------------\n");
             filterChain.doFilter(request, response);
             return;
@@ -55,31 +56,47 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
             if (userEmail != null && SecurityContextHolder.getContext().getAuthentication() == null) {
                 
-                // CRUCIAL FIX: Safely formatting the role prefix to prevent 403 authorization bugs
+                // Safe formatting: ensures role turns into "ROLE_USER" without producing "ROLE_ROLE_USER"
                 String formattedRole = role;
-                if (formattedRole != null && !formattedRole.startsWith("ROLE_")) {
-                    formattedRole = "ROLE_" + formattedRole;
+                if (formattedRole != null) {
+                    if (!formattedRole.startsWith("ROLE_")) {
+                        formattedRole = "ROLE_" + formattedRole;
+                    } else if (formattedRole.startsWith("ROLE_ROLE_")) {
+                        formattedRole = formattedRole.replace("ROLE_ROLE_", "ROLE_");
+                    }
                 }
 
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userEmail,
                         null,
-                        Collections.singletonList(new SimpleGrantedAuthority(formattedRole))
+                        Collections.singletonList(new SimpleGrantedAuthority(
+                            formattedRole != null ? formattedRole : "ROLE_USER"
+                        ))
                 );
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 
-                // Spring Security 6 Context Propagation Best Practice
                 SecurityContext context = SecurityContextHolder.createEmptyContext();
                 context.setAuthentication(authToken);
                 SecurityContextHolder.setContext(context);
 
+                new org.springframework.security.web.context.HttpSessionSecurityContextRepository()
+                    .saveContext(context, request, response);
+
                 System.out.println("Result: Authentication successfully set in SecurityContext with authority: " + formattedRole);
             }
+            
+            System.out.println("------------------------\n");
+            filterChain.doFilter(request, response); // Proceed normally for valid token
+            
         } else {
-            System.out.println("Result: Token validation failed (expired, wrong signature, or corrupted).");
+            // 2. Clear security context and reject invalid/expired tokens immediately
+            System.out.println("Result: Token validation failed. Rejecting request.");
+            System.out.println("------------------------\n");
+            SecurityContextHolder.clearContext();
+            response.setStatus(HttpServletResponse.SC_UNAUTHORIZED);
+            response.setContentType("application/json");
+            response.getWriter().write("{\"error\": \"Unauthorized\", \"message\": \"Token is expired or invalid.\"}");
+            // Terminate chain here so invalid tokens are safely rejected before matching endpoints
         }
-        System.out.println("------------------------\n");
-
-        filterChain.doFilter(request, response);
     }
 }

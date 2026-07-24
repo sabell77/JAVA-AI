@@ -27,13 +27,18 @@ public class TicketService {
         this.ticketRepository = ticketRepository;
     }
 
+    public Ticket getTicketById(String id) {
+    return ticketRepository.findById(id)
+            .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
+    }
+
     /**
      * Requirement 3: Create a ticket with logging
      */
-    public TicketResponse createTicket(CreateTicketRequest request) {
+    public TicketResponse createTicket(CreateTicketRequest request, String createdBy) {
             // Log using the properties from the incoming Request DTO
             log.info("Attempting to create a new ticket under category: '{}' by user: '{}'", 
-                    request.category(), request.createdBy());
+                    request.category(), createdBy);
 
             // Map fields from the Request DTO to a fresh Database Entity Model
             Ticket ticket = new Ticket();
