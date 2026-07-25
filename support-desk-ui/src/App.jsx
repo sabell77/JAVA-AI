@@ -1,12 +1,14 @@
 import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
+import AppShell from './components/AppShell';
 import TicketFilterPanel from './components/TicketFilterPanel';
 import TicketList from './components/TicketList';
 import TicketDetail from './components/TicketDetail';
 import { sampleTickets } from './data/sampleTickets';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
+import ReportsPage from './pages/ReportsPage';
 
 export default function App() {
   const [searchText, setSearchText] = useState('');
@@ -29,38 +31,46 @@ export default function App() {
   return (
     <Layout>
       <Routes>
-        {/* Redirect root path to dashboard */}
+        {/* Redirect root URL to /app/dashboard */}
         <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
 
-        {/* Exercise 1 Routes */}
+        {/* Public Login Route */}
         <Route path="/login" element={<LoginPage />} />
-        <Route path="/app/dashboard" element={<DashboardPage />} />
 
-        {/* Existing Ticket Workspace Route */}
-        <Route
-          path="/app/tickets"
-          element={
-            <>
-              <TicketFilterPanel
-                searchText={searchText}
-                onSearchChange={setSearchText}
-                selectedStatus={selectedStatus}
-                onStatusChange={setSelectedStatus}
-                selectedPriority={selectedPriority}
-                onPriorityChange={setSelectedPriority}
-              />
-
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                <TicketList
-                  tickets={filteredTickets}
-                  selectedTicket={selectedTicket}
-                  onSelectTicket={setSelectedTicket}
+        {/* Protected App Routes Nested under AppShell */}
+        <Route path="/app" element={<AppShell />}>
+          {/* Default redirect for /app */}
+          <Route index element={<Navigate to="/app/dashboard" replace />} />
+          
+          <Route path="dashboard" element={<DashboardPage />} />
+          
+          <Route
+            path="tickets"
+            element={
+              <>
+                <TicketFilterPanel
+                  searchText={searchText}
+                  onSearchChange={setSearchText}
+                  selectedStatus={selectedStatus}
+                  onStatusChange={setSelectedStatus}
+                  selectedPriority={selectedPriority}
+                  onPriorityChange={setSelectedPriority}
                 />
-                <TicketDetail ticket={selectedTicket} />
-              </div>
-            </>
-          }
-        />
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                  <TicketList
+                    tickets={filteredTickets}
+                    selectedTicket={selectedTicket}
+                    onSelectTicket={setSelectedTicket}
+                  />
+                  <TicketDetail ticket={selectedTicket} />
+                </div>
+              </>
+            }
+          />
+          
+          <Route path="reports" element={<ReportsPage />} />
+        </Route>
       </Routes>
     </Layout>
   );
