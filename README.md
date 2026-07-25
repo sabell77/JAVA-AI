@@ -347,3 +347,9 @@ Tracking priority distribution over time helps managers determine if specialized
 ### Reflection Question
 **Why is API documentation useful before frontend integration?**
 It acts as an agreed blueprint or contract between backend and frontend teams, allowing both sides to work in parallel without blocking each other.
+
+## Day 10 Exercise 05 - Backend Milestone Review
+
+### Reflection Question
+**What is one thing you would improve before connecting this backend to React?**
+Ensuring all validation and runtime exceptions return a consistent JSON structure
