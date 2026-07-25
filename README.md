@@ -334,3 +334,12 @@ I would rewrite the query matching logic using a dynamic Spring Data MongoDB Cri
 
 **Why is a grouped report endpoint better than asking the frontend to download all tickets and count them manually?**
 Aggregated reports don't expose sensitive ticket fields, customer emails, or private descriptions to frontend clients that only need counts for dashboards.
+
+## Day 10 Exercise 03 - Ticket Report by Priority
+
+### Reflection Question
+
+**How could this report help a support manager decide where to assign staff?**
+Tracking priority distribution over time helps managers determine if specialized senior engineers are needed for complex high-priority cases or if junior staff can handle lower-priority queues
+
+
