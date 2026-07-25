@@ -57,7 +57,7 @@ public class SecurityConfig {
 
                 .requestMatchers("/api/v1/reports/**").hasAnyRole("USER", "ADMIN")
                 .requestMatchers("/api/docs/**").permitAll()
-                
+                .requestMatchers("/api/v1/info").permitAll()
                 .anyRequest().authenticated()
             )
             .exceptionHandling(exceptions -> exceptions
