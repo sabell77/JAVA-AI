@@ -1,9 +1,12 @@
 import { useState } from 'react';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import TicketFilterPanel from './components/TicketFilterPanel';
 import TicketList from './components/TicketList';
 import TicketDetail from './components/TicketDetail';
 import { sampleTickets } from './data/sampleTickets';
+import LoginPage from './pages/LoginPage';
+import DashboardPage from './pages/DashboardPage';
 
 export default function App() {
   const [searchText, setSearchText] = useState('');
@@ -25,23 +28,40 @@ export default function App() {
 
   return (
     <Layout>
-      <TicketFilterPanel
-        searchText={searchText}
-        onSearchChange={setSearchText}
-        selectedStatus={selectedStatus}
-        onStatusChange={setSelectedStatus}
-        selectedPriority={selectedPriority}
-        onPriorityChange={setSelectedPriority}
-      />
+      <Routes>
+        {/* Redirect root path to dashboard */}
+        <Route path="/" element={<Navigate to="/app/dashboard" replace />} />
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-        <TicketList
-          tickets={filteredTickets}
-          selectedTicket={selectedTicket}
-          onSelectTicket={setSelectedTicket}
+        {/* Exercise 1 Routes */}
+        <Route path="/login" element={<LoginPage />} />
+        <Route path="/app/dashboard" element={<DashboardPage />} />
+
+        {/* Existing Ticket Workspace Route */}
+        <Route
+          path="/app/tickets"
+          element={
+            <>
+              <TicketFilterPanel
+                searchText={searchText}
+                onSearchChange={setSearchText}
+                selectedStatus={selectedStatus}
+                onStatusChange={setSelectedStatus}
+                selectedPriority={selectedPriority}
+                onPriorityChange={setSelectedPriority}
+              />
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                <TicketList
+                  tickets={filteredTickets}
+                  selectedTicket={selectedTicket}
+                  onSelectTicket={setSelectedTicket}
+                />
+                <TicketDetail ticket={selectedTicket} />
+              </div>
+            </>
+          }
         />
-        <TicketDetail ticket={selectedTicket} />
-      </div>
+      </Routes>
     </Layout>
   );
 }
