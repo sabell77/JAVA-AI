@@ -1,3 +1,9 @@
+import Layout from './components/Layout';
+
 export default function App() {
-  return <h1>Support Desk UI</h1>;
+  return (
+    <Layout>
+      <p>Ticket dashboard goes here</p>
+    </Layout>
+  );
 }
