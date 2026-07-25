@@ -26,8 +26,7 @@ Content-Type: application/json
 
 ### 3. v1 Ticket endpoint works with a valid token
 GET http://localhost:8080/api/v1/tickets
-Authorization: Bearer {{user_token}}
-
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUk9MRV9VU0VSIiwibmFtZSI6Ik1heWEiLCJzdWIiOiJtYXlhLmRvZUBjb21wYW55LmNvbSIsImlhdCI6MTc4NDk0MjI2MSwiZXhwIjoxNzg1MDI4NjYxfQ.hAd1gYEcvlqNkWvWHtFfvtMBZ1KaOstbLM2vwQj8DzA
 > {%
     client.test("v1 Access with token should be successful", function() {
         client.assert(response.status === 200, "Expected 200 OK");
@@ -36,7 +35,7 @@ Authorization: Bearer {{user_token}}
 
 ### 4. Legacy /api/tickets endpoint still works
 GET http://localhost:8080/api/tickets
-Authorization: Bearer {{user_token}}
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUk9MRV9VU0VSIiwibmFtZSI6Ik1heWEiLCJzdWIiOiJtYXlhLmRvZUBjb21wYW55LmNvbSIsImlhdCI6MTc4NDk0MjI2MSwiZXhwIjoxNzg1MDI4NjYxfQ.hAd1gYEcvlqNkWvWHtFfvtMBZ1KaOstbLM2vwQj8DzA
 
 > {%
     client.test("Legacy access should still be supported", function() {
@@ -44,3 +43,6 @@ Authorization: Bearer {{user_token}}
     });
 %}
 
+### Exercise 2: Get Ticket Count Grouped by Status (Authenticated)
+GET http://localhost:8080/api/v1/reports/tickets-by-status
+Authorization: Bearer eyJhbGciOiJIUzI1NiJ9.eyJyb2xlIjoiUk9MRV9VU0VSIiwibmFtZSI6Ik1heWEiLCJzdWIiOiJtYXlhLmRvZUBjb21wYW55LmNvbSIsImlhdCI6MTc4NDk0MjI2MSwiZXhwIjoxNzg1MDI4NjYxfQ.hAd1gYEcvlqNkWvWHtFfvtMBZ1KaOstbLM2vwQj8DzA
