@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Routes, Route, Navigate } from 'react-router-dom';
 import Layout from './components/Layout';
 import AppShell from './components/AppShell';
+import ProtectedRoute from './components/ProtectedRoute';
 import TicketFilterPanel from './components/TicketFilterPanel';
 import TicketList from './components/TicketList';
 import TicketDetail from './components/TicketDetail';
@@ -37,39 +38,41 @@ export default function App() {
         {/* Public Login Route */}
         <Route path="/login" element={<LoginPage />} />
 
-        {/* Protected App Routes Nested under AppShell */}
-        <Route path="/app" element={<AppShell />}>
-          {/* Default redirect for /app */}
-          <Route index element={<Navigate to="/app/dashboard" replace />} />
-          
-          <Route path="dashboard" element={<DashboardPage />} />
-          
-          <Route
-            path="tickets"
-            element={
-              <>
-                <TicketFilterPanel
-                  searchText={searchText}
-                  onSearchChange={setSearchText}
-                  selectedStatus={selectedStatus}
-                  onStatusChange={setSelectedStatus}
-                  selectedPriority={selectedPriority}
-                  onPriorityChange={setSelectedPriority}
-                />
+        {/* Protected App Routes - Wrapped in ProtectedRoute */}
+        <Route element={<ProtectedRoute />}>
+          <Route path="/app" element={<AppShell />}>
+            {/* Default redirect for /app */}
+            <Route index element={<Navigate to="/app/dashboard" replace />} />
 
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
-                  <TicketList
-                    tickets={filteredTickets}
-                    selectedTicket={selectedTicket}
-                    onSelectTicket={setSelectedTicket}
+            <Route path="dashboard" element={<DashboardPage />} />
+
+            <Route
+              path="tickets"
+              element={
+                <>
+                  <TicketFilterPanel
+                    searchText={searchText}
+                    onSearchChange={setSearchText}
+                    selectedStatus={selectedStatus}
+                    onStatusChange={setSelectedStatus}
+                    selectedPriority={selectedPriority}
+                    onPriorityChange={setSelectedPriority}
                   />
-                  <TicketDetail ticket={selectedTicket} />
-                </div>
-              </>
-            }
-          />
-          
-          <Route path="reports" element={<ReportsPage />} />
+
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem' }}>
+                    <TicketList
+                      tickets={filteredTickets}
+                      selectedTicket={selectedTicket}
+                      onSelectTicket={setSelectedTicket}
+                    />
+                    <TicketDetail ticket={selectedTicket} />
+                  </div>
+                </>
+              }
+            />
+
+            <Route path="reports" element={<ReportsPage />} />
+          </Route>
         </Route>
       </Routes>
     </Layout>
