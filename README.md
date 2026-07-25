@@ -342,4 +342,8 @@ Aggregated reports don't expose sensitive ticket fields, customer emails, or pri
 **How could this report help a support manager decide where to assign staff?**
 Tracking priority distribution over time helps managers determine if specialized senior engineers are needed for complex high-priority cases or if junior staff can handle lower-priority queues
 
+## Day 10 Exercise 04 - API Documentation Endpoint
 
+### Reflection Question
+**Why is API documentation useful before frontend integration?**
+It acts as an agreed blueprint or contract between backend and frontend teams, allowing both sides to work in parallel without blocking each other.

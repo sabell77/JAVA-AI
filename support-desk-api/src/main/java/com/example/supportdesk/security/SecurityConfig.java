@@ -56,6 +56,8 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/v1/tickets", "/api/v1/tickets/**").hasAnyAuthority("USER", "ADMIN", "ROLE_USER", "ROLE_ADMIN")
 
                 .requestMatchers("/api/v1/reports/**").hasAnyRole("USER", "ADMIN")
+                .requestMatchers("/api/docs/**").permitAll()
+                
                 .anyRequest().authenticated()
             )
             .exceptionHandling(exceptions -> exceptions
