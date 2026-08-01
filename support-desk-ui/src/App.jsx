@@ -10,6 +10,7 @@ import { sampleTickets } from './data/sampleTickets';
 import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ReportsPage from './pages/ReportsPage';
+import TicketFormPage from './pages/TicketFormPage';
 
 export default function App() {
   const [searchText, setSearchText] = useState('');
@@ -70,6 +71,8 @@ export default function App() {
                 </>
               }
             />
+
+            <Route path="tickets/new" element={<TicketFormPage />} />
 
             <Route path="reports" element={<ReportsPage />} />
           </Route>
