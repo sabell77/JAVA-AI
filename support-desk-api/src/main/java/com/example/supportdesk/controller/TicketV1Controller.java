@@ -1,7 +1,12 @@
 package com.example.supportdesk.controller;
 
 import com.example.supportdesk.dto.CreateTicketRequest;
+import com.example.supportdesk.dto.TicketResponse;
+import com.example.supportdesk.dto.UpdateTicketRequest;
 import com.example.supportdesk.service.TicketService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -56,5 +61,14 @@ public class TicketV1Controller {
             e.printStackTrace();
             return ResponseEntity.status(500).body("Error creating ticket: " + e.getMessage());
         }
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TicketResponse> updateTicket(
+            @PathVariable String id,
+            @Valid @RequestBody UpdateTicketRequest request
+    ) {
+        TicketResponse updatedTicket = ticketService.updateTicket(id, request);
+        return ResponseEntity.ok(updatedTicket);
     }
 }

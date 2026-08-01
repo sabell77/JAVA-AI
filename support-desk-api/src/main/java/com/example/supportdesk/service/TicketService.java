@@ -2,6 +2,8 @@ package com.example.supportdesk.service;
 
 import com.example.supportdesk.dto.CreateTicketRequest;
 import com.example.supportdesk.dto.TicketResponse;
+import com.example.supportdesk.dto.UpdateTicketRequest;
+import com.example.supportdesk.exception.ResourceNotFoundException;
 import com.example.supportdesk.model.Ticket;
 import com.example.supportdesk.repository.TicketRepository;
 import org.slf4j.Logger;
@@ -124,5 +126,24 @@ public class TicketService {
                 ticket.getCreatedBy(),
                 ticket.getCreatedAt()
         );
+    }
+
+    public TicketResponse updateTicket(String id, UpdateTicketRequest request) {
+        // 1. Fetch the ticket or throw an exception if not found
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
+
+        // 2. Update the fields
+        ticket.setTitle(request.getTitle());
+        ticket.setDescription(request.getDescription());
+        ticket.setCategory(request.getCategory());
+        ticket.setPriority(request.getPriority()); // Or assign String directly depending on your Model design
+        ticket.setStatus(request.getStatus());
+
+        // 3. Save updated document/entity to MongoDB
+        Ticket updatedTicket = ticketRepository.save(ticket);
+
+        // 4. Map and return response DTO
+        return mapToResponseDTO(updatedTicket);
     }
 }
