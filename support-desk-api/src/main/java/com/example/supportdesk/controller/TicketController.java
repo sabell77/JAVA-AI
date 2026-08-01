@@ -2,7 +2,11 @@ package com.example.supportdesk.controller;
 
 import com.example.supportdesk.dto.CreateTicketRequest;
 import com.example.supportdesk.dto.TicketResponse;
+import com.example.supportdesk.dto.UpdateTicketRequest;
 import com.example.supportdesk.service.TicketService;
+
+import jakarta.validation.Valid;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -49,5 +53,14 @@ public class TicketController {
             
         Page<TicketResponse> pagedTickets = ticketService.getPagedTickets(page, size, sortBy, direction);
         return ResponseEntity.ok(pagedTickets);
+    }
+
+    @PutMapping("/{id}")
+    public ResponseEntity<TicketResponse> updateTicket(
+            @PathVariable String id,
+            @Valid @RequestBody UpdateTicketRequest request
+    ) {
+        TicketResponse updatedTicket = ticketService.updateTicket(id, request);
+        return ResponseEntity.ok(updatedTicket);
     }
 }
