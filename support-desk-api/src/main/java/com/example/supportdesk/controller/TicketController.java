@@ -7,15 +7,16 @@ import com.example.supportdesk.service.TicketService;
 
 import jakarta.validation.Valid;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication; 
 import org.springframework.web.bind.annotation.*;
-import org.springframework.data.domain.Page;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("/api/tickets")
+@RequestMapping("/api/v1/tickets") 
 @CrossOrigin(origins = {"http://localhost:5173", "http://localhost:5174"})
 public class TicketController {
 
@@ -25,26 +26,35 @@ public class TicketController {
         this.ticketService = ticketService;
     }
 
+    /**
+     * POST /api/v1/tickets
+     * Creates a new ticket for the logged-in user
+     */
     @PostMapping
-    public ResponseEntity<?> createTicket(
-            @RequestBody CreateTicketRequest request,
-            org.springframework.security.core.Authentication authentication
+    public ResponseEntity<TicketResponse> createTicket(
+            @Valid @RequestBody CreateTicketRequest request, 
+            Authentication authentication
     ) {
         String currentUserEmail = authentication.getName();
         return ResponseEntity.status(HttpStatus.CREATED)
                 .body(ticketService.createTicket(request, currentUserEmail));
     }
 
+    /**
+     * GET /api/v1/tickets
+     * Returns tickets filtered by user role (ROLE_USER sees theirs, ROLE_ADMIN sees all)
+     */
     @GetMapping
-    public ResponseEntity<List<TicketResponse>> getAllTickets(
-            @RequestParam(required = false) String status,
-            @RequestParam(required = false) String priority,
-            @RequestParam(required = false) String category) {
-        
-        List<TicketResponse> tickets = ticketService.getAllTickets(status, priority, category);
+    public ResponseEntity<List<TicketResponse>> getAllTickets() {
+        // FIXED: Calls getTicketsForCurrentUser() for role-based data isolation
+        List<TicketResponse> tickets = ticketService.getTicketsForCurrentUser();
         return ResponseEntity.ok(tickets);
     }
 
+    /**
+     * GET /api/v1/tickets/paged
+     * Returns paginated tickets
+     */
     @GetMapping("/paged")
     public ResponseEntity<Page<TicketResponse>> getPagedTickets(
             @RequestParam(defaultValue = "0") int page,
@@ -56,6 +66,10 @@ public class TicketController {
         return ResponseEntity.ok(pagedTickets);
     }
 
+    /**
+     * PUT /api/v1/tickets/{id}
+     * Updates ticket by ID
+     */
     @PutMapping("/{id}")
     public ResponseEntity<TicketResponse> updateTicket(
             @PathVariable String id,
@@ -65,10 +79,13 @@ public class TicketController {
         return ResponseEntity.ok(updatedTicket);
     }
 
+    /**
+     * GET /api/v1/tickets/{id}
+     * Fetches single ticket by ID
+     */
     @GetMapping("/{id}")
     public ResponseEntity<TicketResponse> getTicketById(@PathVariable String id) {
         TicketResponse response = ticketService.getTicketById(id);
         return ResponseEntity.ok(response);
     }
-
 }

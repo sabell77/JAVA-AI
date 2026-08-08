@@ -7,10 +7,12 @@ import com.example.supportdesk.service.TicketService;
 
 import jakarta.validation.Valid;
 
+import java.util.List;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
-
 
 @RestController
 @RequestMapping("/api/v1/tickets")
@@ -23,47 +25,45 @@ public class TicketV1Controller {
         this.ticketService = ticketService;
     }
 
+    /**
+     * GET /api/v1/tickets
+     * Fetches tickets filtered by user role (ROLE_USER sees theirs, ROLE_ADMIN sees all)
+     */
     @GetMapping
-    public ResponseEntity<?> getAllTicketsV1() { 
-        try {
-            System.out.println("👉 Successfully entered TicketV1Controller! Executing service layer...");
-            return ResponseEntity.ok(ticketService.getAllTickets(null, null, null));
-        } catch (Exception e) {
-            System.out.println("❌ CRASH DETECTED INSIDE TICKETSERVICE:");
-            e.printStackTrace(); 
-            
-            return ResponseEntity.status(500).body("Service Layer Error: " + e.getMessage());
-        }
+    public ResponseEntity<List<TicketResponse>> getAllTickets() {
+        List<TicketResponse> tickets = ticketService.getTicketsForCurrentUser();
+        return ResponseEntity.ok(tickets);
     }
 
+    /**
+     * GET /api/v1/tickets/{id}
+     * Fetches a single ticket by ID
+     */
     @GetMapping("/{id}")
-    public ResponseEntity<?> getTicketByIdV1(@PathVariable String id) {
-        try {
-            return ResponseEntity.ok(ticketService.getTicketById(id));
-        } catch (Exception e) {
-            System.out.println("❌ ERROR IN getTicketByIdV1:");
-            e.printStackTrace();
-            return ResponseEntity.status(404).body("Error finding ticket: " + e.getMessage());
-        }
+    public ResponseEntity<TicketResponse> getTicketById(@PathVariable String id) {
+        TicketResponse ticket = ticketService.getTicketById(id);
+        return ResponseEntity.ok(ticket);
     }
 
+    /**
+     * POST /api/v1/tickets
+     * Creates a new ticket under the authenticated user's account
+     */
     @PostMapping
-    public ResponseEntity<?> createTicketV1(
-            @RequestBody CreateTicketRequest request,
-            org.springframework.security.core.Authentication authentication
+    public ResponseEntity<TicketResponse> createTicket(
+            @Valid @RequestBody CreateTicketRequest request,
+            Authentication authentication
     ) {
-        try {
-            String currentUserEmail = authentication.getName(); 
-            com.example.supportdesk.dto.TicketResponse created = ticketService.createTicket(request, currentUserEmail);
-            
-            return ResponseEntity.status(HttpStatus.CREATED).body(created);
-        } catch (Exception e) {
-            System.out.println("❌ ERROR IN createTicketV1:");
-            e.printStackTrace();
-            return ResponseEntity.status(500).body("Error creating ticket: " + e.getMessage());
-        }
+        String currentUserEmail = authentication.getName(); 
+        TicketResponse created = ticketService.createTicket(request, currentUserEmail);
+        
+        return ResponseEntity.status(HttpStatus.CREATED).body(created);
     }
 
+    /**
+     * PUT /api/v1/tickets/{id}
+     * Updates an existing ticket (enforces role/ownership checks in service layer)
+     */
     @PutMapping("/{id}")
     public ResponseEntity<TicketResponse> updateTicket(
             @PathVariable String id,

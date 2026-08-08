@@ -12,6 +12,9 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.security.access.AccessDeniedException; 
+import org.springframework.security.core.Authentication; 
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
@@ -20,72 +23,41 @@ import java.util.List;
 @Service
 public class TicketService {
 
-    // Part C: Initialize the Logger instance
     private static final Logger log = LoggerFactory.getLogger(TicketService.class);
-    
     private final TicketRepository ticketRepository;
 
     public TicketService(TicketRepository ticketRepository) {
         this.ticketRepository = ticketRepository;
     }
 
-    public TicketResponse getTicketById(String id) {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
-        
-        return mapToResponseDTO(ticket);
-    }
-
     /**
-     * Requirement 3: Create a ticket with logging
+     * Requirement 1: Fetch all tickets filtered by user role
      */
-    public TicketResponse createTicket(CreateTicketRequest request, String createdBy) {
-            // Log using the properties from the incoming Request DTO
-            log.info("Attempting to create a new ticket under category: '{}' by user: '{}'", 
-                    request.category(), createdBy);
+    public List<TicketResponse> getTicketsForCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = auth.getName();
 
-            // Map fields from the Request DTO to a fresh Database Entity Model
-            Ticket ticket = new Ticket();
-            ticket.setTitle(request.title());
-            ticket.setDescription(request.description());
-            ticket.setCategory(request.category());
-            ticket.setPriority(request.priority());
+        log.info(">>> LOGGED IN USER: {}", currentUserEmail);
+        log.info(">>> USER AUTHORITIES: {}", auth.getAuthorities());
 
-            // Set system defaults if missing
-            ticket.setStatus("OPEN");
-            ticket.setCreatedBy(request.createdBy());
-            ticket.setCreatedAt(LocalDateTime.now());
+        boolean isAdmin = auth.getAuthorities().stream()
+                .anyMatch(grantedAuthority -> 
+                    grantedAuthority.getAuthority().equalsIgnoreCase("ROLE_ADMIN") || 
+                    grantedAuthority.getAuthority().equalsIgnoreCase("ADMIN")
+                );
 
-            // Persist the entity to MongoDB
-            Ticket savedTicket = ticketRepository.save(ticket);
-
-            // Log the successfully generated database document ID
-            log.info("Successfully created ticket with generated ID: [ {} ]", savedTicket.getId());
-            
-            return mapToResponseDTO(savedTicket);
-        }
-    /**
-     * Requirement 1: Fetch tickets with optional query parameters and logging
-     */
-    public List<TicketResponse> getAllTickets(String status, String priority, String category) {
-        // Log the incoming filter queries
-        log.info("Fetching filtered tickets. Query params received -> status: '{}', priority: '{}', category: '{}'", 
-                status, priority, category);
+        log.info(">>> IS ADMIN EVALUATED TO: {}", isAdmin);
 
         List<Ticket> tickets;
-
-        if (status != null && !status.isEmpty()) {
-            tickets = ticketRepository.findByStatus(status);
-        } else if (priority != null && !priority.isEmpty()) {
-            tickets = ticketRepository.findByPriority(priority);
-        } else if (category != null && !category.isEmpty()) {
-            tickets = ticketRepository.findByCategory(category);
-        } else {
+        if (isAdmin) {
+            log.info("Admin user [{}] fetching all tickets.", currentUserEmail);
             tickets = ticketRepository.findAll();
+        } else {
+            log.info("Regular user [{}] fetching their tickets.", currentUserEmail);
+            tickets = ticketRepository.findByCreatedBy(currentUserEmail);
         }
 
-        // Log the final count retrieved out of the database matching the criteria
-        log.info("Filtering operation complete. Returned {} matching records from MongoDB.", tickets.size());
+        log.info(">>> TICKETS RETURNED COUNT: {}", tickets.size());
 
         return tickets.stream()
                 .map(this::mapToResponseDTO)
@@ -93,25 +65,113 @@ public class TicketService {
     }
 
     /**
-     * Requirement 2: Fetch paginated and sorted tickets with logging
+     * Fetch single ticket by ID (Enforces ownership/admin access check)
+     */
+    public TicketResponse getTicketById(String id) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = auth.getName();
+        boolean isAdmin = checkIsAdmin(auth);
+
+        // SECURITY FIX: Block regular users from viewing someone else's ticket by ID
+        if (!isAdmin && !currentUserEmail.equalsIgnoreCase(ticket.getCreatedBy())) {
+            log.warn("User [{}] attempted unauthorized view on ticket ID [{}]", currentUserEmail, id);
+            throw new AccessDeniedException("You do not have permission to view this ticket.");
+        }
+
+        return mapToResponseDTO(ticket);
+    }
+
+    /**
+     * Requirement 3: Create a ticket with logging and auto-assigned user
+     */
+    public TicketResponse createTicket(CreateTicketRequest request, String createdBy) {
+        log.info("Attempting to create a new ticket under category: '{}' by user: '{}'", 
+                request.category(), createdBy);
+
+        Ticket ticket = new Ticket();
+        ticket.setTitle(request.title());
+        ticket.setDescription(request.description());
+        ticket.setCategory(request.category());
+        ticket.setPriority(request.priority());
+        ticket.setStatus("OPEN");
+        ticket.setCreatedBy(createdBy); 
+        ticket.setCreatedAt(LocalDateTime.now());
+
+        Ticket savedTicket = ticketRepository.save(ticket);
+        log.info("Successfully created ticket with generated ID: [ {} ]", savedTicket.getId());
+        
+        return mapToResponseDTO(savedTicket);
+    }
+
+    /**
+     * Requirement 4: Update an existing ticket with safe null check & authorization
+     */
+    public TicketResponse updateTicket(String id, UpdateTicketRequest request) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
+
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = auth.getName();
+        boolean isAdmin = checkIsAdmin(auth);
+
+        // SECURITY FIX: Safe null check on ticket.getCreatedBy()
+        boolean isOwner = ticket.getCreatedBy() != null && ticket.getCreatedBy().equalsIgnoreCase(currentUserEmail);
+
+        if (!isAdmin && !isOwner) {
+            log.warn("User [{}] attempted unauthorized update on ticket ID [{}]", currentUserEmail, id);
+            throw new AccessDeniedException("You do not have permission to update this ticket.");
+        }
+
+        ticket.setTitle(request.getTitle());
+        ticket.setDescription(request.getDescription());
+        ticket.setCategory(request.getCategory());
+        ticket.setPriority(request.getPriority());
+        ticket.setStatus(request.getStatus());
+
+        Ticket updatedTicket = ticketRepository.save(ticket);
+        log.info("Successfully updated ticket ID: [{}]", id);
+
+        return mapToResponseDTO(updatedTicket);
+    }
+
+    /**
+     * Requirement 2: Fetch paginated tickets with role isolation
      */
     public Page<TicketResponse> getPagedTickets(int page, int size, String sortBy, String direction) {
-        // Log pagination target configuration settings
-        log.info("Fetching paginated tickets request -> Page Index: {}, Size Limit: {}, Sort Property: {}, Direction: {}", 
-                page, size, sortBy, direction);
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String currentUserEmail = auth.getName();
+        boolean isAdmin = checkIsAdmin(auth);
+
+        log.info("Fetching paginated tickets -> User: {}, Page: {}, Size: {}, Sort: {}, Direction: {}", 
+                currentUserEmail, page, size, sortBy, direction);
 
         Sort.Direction sortDirection = direction.equalsIgnoreCase("asc") 
                 ? Sort.Direction.ASC 
                 : Sort.Direction.DESC;
                 
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
-        Page<Ticket> ticketPage = ticketRepository.findAll(pageable);
-
-        // Log the structural details of the returned data slice
-        log.info("Pagination complete. Loaded page {} of {}. Total matching items across database: {}", 
-                ticketPage.getNumber(), ticketPage.getTotalPages(), ticketPage.getTotalElements());
+        
+        // SECURITY FIX: Filter paginated results by user role
+        Page<Ticket> ticketPage;
+        if (isAdmin) {
+            ticketPage = ticketRepository.findAll(pageable);
+        } else {
+            ticketPage = ticketRepository.findByCreatedBy(currentUserEmail, pageable);
+        }
 
         return ticketPage.map(this::mapToResponseDTO);
+    }
+
+    /**
+     * Helper method to check ADMIN authority safely
+     */
+    private boolean checkIsAdmin(Authentication auth) {
+        if (auth == null) return false;
+        return auth.getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
     }
 
     /**
@@ -128,24 +188,5 @@ public class TicketService {
                 ticket.getCreatedBy(),
                 ticket.getCreatedAt()
         );
-    }
-
-    public TicketResponse updateTicket(String id, UpdateTicketRequest request) {
-        // 1. Fetch the ticket or throw an exception if not found
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
-
-        // 2. Update the fields
-        ticket.setTitle(request.getTitle());
-        ticket.setDescription(request.getDescription());
-        ticket.setCategory(request.getCategory());
-        ticket.setPriority(request.getPriority()); // Or assign String directly depending on your Model design
-        ticket.setStatus(request.getStatus());
-
-        // 3. Save updated document/entity to MongoDB
-        Ticket updatedTicket = ticketRepository.save(ticket);
-
-        // 4. Map and return response DTO
-        return mapToResponseDTO(updatedTicket);
     }
 }
