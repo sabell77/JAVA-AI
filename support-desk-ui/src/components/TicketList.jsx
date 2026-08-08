@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom';
 import PriorityBadge from './PriorityBadge';
 import StatusBadge from './StatusBadge';
 
@@ -7,10 +8,12 @@ export default function TicketList({ tickets, selectedTicket, onSelectTicket }) 
       <h2>Tickets ({tickets.length})</h2>
       <ul style={{ listStyle: 'none', padding: 0, margin: 0 }}>
         {tickets.map((ticket) => {
-          const isSelected = selectedTicket?.id === ticket.id;
+          const ticketId = ticket.id || ticket._id;
+          const isSelected = selectedTicket?.id === ticketId || selectedTicket?._id === ticketId;
+
           return (
             <li
-              key={ticket.id}
+              key={ticketId}
               onClick={() => onSelectTicket(ticket)}
               style={{
                 padding: '0.75rem',
@@ -22,7 +25,27 @@ export default function TicketList({ tickets, selectedTicket, onSelectTicket }) 
                 transition: 'background-color 0.2s'
               }}
             >
-              <div style={{ fontWeight: 'bold', marginBottom: '0.25rem' }}>{ticket.title}</div>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.5rem' }}>
+                <div style={{ fontWeight: 'bold' }}>{ticket.title}</div>
+
+                {/* EDIT BUTTON LINK */}
+                <Link
+                  to={`/app/tickets/${ticketId}/edit`}
+                  onClick={(e) => e.stopPropagation()} /* Prevents triggering onSelectTicket */
+                  style={{
+                    padding: '0.25rem 0.5rem',
+                    backgroundColor: '#007bff',
+                    color: '#ffffff',
+                    textDecoration: 'none',
+                    borderRadius: '4px',
+                    fontSize: '0.85rem',
+                    fontWeight: 'normal'
+                  }}
+                >
+                  Edit
+                </Link>
+              </div>
+
               <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
                 <PriorityBadge priority={ticket.priority} />
                 <StatusBadge status={ticket.status} />

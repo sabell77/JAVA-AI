@@ -29,9 +29,11 @@ public class TicketService {
         this.ticketRepository = ticketRepository;
     }
 
-    public Ticket getTicketById(String id) {
-    return ticketRepository.findById(id)
-            .orElseThrow(() -> new RuntimeException("Ticket not found with id: " + id));
+    public TicketResponse getTicketById(String id) {
+        Ticket ticket = ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
+        
+        return mapToResponseDTO(ticket);
     }
 
     /**

@@ -64,4 +64,11 @@ public class TicketController {
         TicketResponse updatedTicket = ticketService.updateTicket(id, request);
         return ResponseEntity.ok(updatedTicket);
     }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<TicketResponse> getTicketById(@PathVariable String id) {
+        TicketResponse response = ticketService.getTicketById(id);
+        return ResponseEntity.ok(response);
+    }
+
 }
