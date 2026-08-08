@@ -11,6 +11,7 @@ import LoginPage from './pages/LoginPage';
 import DashboardPage from './pages/DashboardPage';
 import ReportsPage from './pages/ReportsPage';
 import TicketFormPage from './pages/TicketFormPage';
+import TicketsPage from './pages/TicketsPage';
 
 export default function App() {
   const [searchText, setSearchText] = useState('');
@@ -72,6 +73,9 @@ export default function App() {
               }
             />
 
+            {/* Dynamic Tickets Page (fetches directly from Spring Boot API) */}
+            <Route path="tickets" element={<TicketsPage />} />
+            
             <Route path="tickets/new" element={<TicketFormPage />} />
 
             <Route path="reports" element={<ReportsPage />} />
