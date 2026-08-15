@@ -71,3 +71,17 @@ export async function getPagedTickets({
 
   return apiRequest(`/api/v1/tickets/paged?${queryParams.toString()}`);
 }
+
+export async function updateTicketStatus(ticketId, status) {
+  const response = await fetch(`/api/tickets/${ticketId}/status`, {
+    method: 'PUT',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ status }),
+  });
+
+  if (!response.ok) {
+    throw new Error(`Failed to update status to ${status}`);
+  }
+
+  return response.json();
+}

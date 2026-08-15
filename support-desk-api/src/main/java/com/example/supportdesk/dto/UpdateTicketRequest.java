@@ -20,7 +20,7 @@ public class UpdateTicketRequest {
     private String priority;
 
     @NotNull(message = "Status is required")
-    @Pattern(regexp = "^(OPEN|IN_PROGRESS|CLOSED)$", message = "Status must be OPEN, IN_PROGRESS or CLOSED")
+    @Pattern(regexp = "^(OPEN|IN_PROGRESS|RESOLVED|CLOSED)$", message = "Status must be OPEN, IN_PROGRESS, RESOLVED or CLOSED")
     private String status;
 
     public UpdateTicketRequest() {}

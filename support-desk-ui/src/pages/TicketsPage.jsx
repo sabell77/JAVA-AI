@@ -14,7 +14,7 @@ export default function TicketsPage() {
     filters,
     loadStart,
     loadSuccess,
-    loadFromCache,   // Context action for cache hit
+    loadFromCache,   // Restores cached page data
     loadError,
     setSearchText,
     setStatusFilter,
@@ -27,18 +27,18 @@ export default function TicketsPage() {
   const rawPage = pageInfo?.page;
   const currentPage = typeof rawPage === 'number' ? rawPage : 0;
 
-  // Build the cache key requirement: page|size|sortBy|direction
+  // Build key for cache evaluation
   const cacheKey = `${currentPage}|${pageInfo.size || 10}|${pageInfo.sortBy || 'createdAt'}|${pageInfo.direction || 'desc'}|${filters.searchText || ''}|${filters.status || 'ALL'}`;
 
-  // Master fetch function supporting cached reads & forced reloads
+  // Fetch function handling both cached reads & forced reloads
   const fetchTickets = async (isRefresh = false) => {
-    // 1. Check for Cache Hit (unless manual refresh is triggered)
+    // 1. Read from cache if available and not forcing refresh
     if (!isRefresh && cache && cache[cacheKey]) {
       loadFromCache(cacheKey);
       return;
     }
 
-    // 2. Cache Miss or Forced Refresh: Fetch directly from backend
+    // 2. Fetch directly from backend on cache miss or manual refresh
     try {
       loadStart();
       const data = await getPagedTickets({
@@ -55,7 +55,6 @@ export default function TicketsPage() {
     }
   };
 
-  // Trigger fetch/cache load whenever pagination, sorting, or filtering parameters change
   useEffect(() => {
     fetchTickets(false);
   }, [
@@ -77,12 +76,11 @@ export default function TicketsPage() {
 
   return (
     <div style={{ padding: '2rem' }}>
-      {/* Header, Source Badge, and Actions */}
+      {/* Header, Data Source Indicator & Header Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <div>
           <h2>Support Tickets ({pageInfo.totalElements || tickets.length} Total)</h2>
           
-          {/* Requirement: Small message showing data source */}
           {source && (
             <span
               style={{
@@ -102,7 +100,6 @@ export default function TicketsPage() {
         </div>
 
         <div style={{ display: 'flex', gap: '8px' }}>
-          {/* Requirement: Refresh button forces backend reload */}
           <button
             onClick={() => fetchTickets(true)}
             disabled={loading}
@@ -152,7 +149,7 @@ export default function TicketsPage() {
 
         {/* Status Filter */}
         <div>
-          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Status</label>
+          <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', marginBottom: '4px' }}>Status Filter</label>
           <select
             value={filters.status || 'ALL'}
             onChange={(e) => setStatusFilter(e.target.value)}
@@ -189,8 +186,8 @@ export default function TicketsPage() {
             onChange={(e) => setSort(pageInfo.sortBy, e.target.value)}
             style={{ padding: '0.4rem 0.6rem', borderRadius: '4px', border: '1px solid #ccc' }}
           >
-            <option value="desc">Descending (Z-A / Newest)</option>
-            <option value="asc">Ascending (A-Z / Oldest)</option>
+            <option value="desc">Descending</option>
+            <option value="asc">Ascending</option>
           </select>
         </div>
 
@@ -211,7 +208,7 @@ export default function TicketsPage() {
 
       {/* Table Display */}
       {tickets.length === 0 ? (
-        <p>No tickets found matching your criteria. Try adjusting your search or filters!</p>
+        <p>No tickets found matching your criteria.</p>
       ) : (
         <>
           <table border="1" cellPadding="10" style={{ width: '100%', borderCollapse: 'collapse' }}>
@@ -232,7 +229,22 @@ export default function TicketsPage() {
                     <td><strong>{ticket.title}</strong></td>
                     <td>{ticket.category}</td>
                     <td>{ticket.priority}</td>
-                    <td>{ticket.status}</td>
+                    <td>
+                      <span
+                        style={{
+                          padding: '3px 8px',
+                          borderRadius: '4px',
+                          fontSize: '12px',
+                          fontWeight: 'bold',
+                          color: '#ffffff',
+                          backgroundColor:
+                            ticket.status === 'OPEN' ? '#007bff' :
+                            ticket.status === 'IN_PROGRESS' ? '#ffc107' : '#6c757d',
+                        }}
+                      >
+                        {ticket.status}
+                      </span>
+                    </td>
                     <td>
                       <Link
                         to={`/app/tickets/${id}/edit`}
