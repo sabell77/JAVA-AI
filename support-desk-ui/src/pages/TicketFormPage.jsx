@@ -7,7 +7,7 @@ export default function TicketFormPage() {
   const { ticketId } = useParams();
   const isEditMode = Boolean(ticketId);
   const navigate = useNavigate();
-  const { token } = useAuth();
+  const { user } = useAuth(); 
 
   const [formData, setFormData] = useState({
     title: '',
@@ -24,13 +24,13 @@ export default function TicketFormPage() {
 
   // 1. Pre-fill form if editing
   useEffect(() => {
-    if (!isEditMode || !token) return;
+    if (!isEditMode) return;
 
     async function loadTicket() {
       try {
         setFetching(true);
-        // Correct order: token first, then ticketId
-        const data = await getTicketById(token, ticketId);
+        // Clean call - no token needed!
+        const data = await getTicketById(ticketId);
         setFormData({
           title: data.title || '',
           description: data.description || '',
@@ -46,7 +46,7 @@ export default function TicketFormPage() {
     }
 
     loadTicket();
-  }, [ticketId, isEditMode, token]);
+  }, [ticketId, isEditMode]);
 
   const handleChange = (e) => {
     const { name, value } = e.target;
@@ -57,32 +57,30 @@ export default function TicketFormPage() {
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!token) {
-      setError('You are not authenticated. Please log in again.');
-      return;
-    }
-
     setLoading(true);
     setError('');
     setSuccess('');
 
+    // Attach required createdBy email
+    const payload = {
+      ...formData,
+      createdBy: user?.email || 'admin@example.com',
+    };
+
     try {
       if (isEditMode) {
-        // Correct order: token, ticketId, formData
-        await updateTicket(token, ticketId, formData);
+        await updateTicket(ticketId, payload);
         setSuccess('Ticket updated successfully!');
       } else {
-        // Correct order: token, formData
-        await createTicket(token, formData);
+        await createTicket(payload);
         setSuccess('Ticket created successfully!');
       }
 
-      // Redirect after 1 second
-      const timer = setTimeout(() => {
+      // Redirect back after 1 second
+      setTimeout(() => {
         navigate('/app/tickets');
       }, 1000);
 
-      return () => clearTimeout(timer);
     } catch (err) {
       setError(err.message || 'Failed to save ticket.');
     } finally {

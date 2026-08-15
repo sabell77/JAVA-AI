@@ -9,6 +9,7 @@ import jakarta.validation.Valid;
 
 import java.util.List;
 
+import org.springframework.data.domain.Page;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -27,12 +28,31 @@ public class TicketV1Controller {
 
     /**
      * GET /api/v1/tickets
-     * Fetches tickets filtered by user role (ROLE_USER sees theirs, ROLE_ADMIN sees all)
+     * Fetches unpaginated tickets filtered by user role
      */
     @GetMapping
     public ResponseEntity<List<TicketResponse>> getAllTickets() {
         List<TicketResponse> tickets = ticketService.getTicketsForCurrentUser();
         return ResponseEntity.ok(tickets);
+    }
+
+    /**
+     * GET /api/v1/tickets/paged
+     * Fetches paged, sorted, and filtered tickets
+     */
+    @GetMapping("/paged")
+    public ResponseEntity<Page<TicketResponse>> getPagedTickets(
+            @RequestParam(defaultValue = "0") int page,
+            @RequestParam(defaultValue = "10") int size,
+            @RequestParam(defaultValue = "createdAt") String sortBy,
+            @RequestParam(defaultValue = "desc") String direction,
+            @RequestParam(required = false) String searchText,
+            @RequestParam(required = false) String status
+    ) {
+        Page<TicketResponse> ticketPage = ticketService.getPagedTickets(
+                page, size, sortBy, direction, searchText, status
+        );
+        return ResponseEntity.ok(ticketPage);
     }
 
     /**

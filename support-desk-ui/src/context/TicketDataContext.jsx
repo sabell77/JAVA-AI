@@ -7,10 +7,12 @@ const initialState = {
   loading: false,
   error: null,
   pageInfo: {
-    page: 1,
-    limit: 10,
+    page: 0,
+    size: 10,
     totalPages: 1,
     totalElements: 0,
+    sortBy: 'createdAt',
+    direction: 'desc',
   },
   filters: {
     searchText: '',
@@ -25,6 +27,9 @@ export const TICKET_ACTIONS = {
   LOAD_ERROR: 'LOAD_ERROR',
   SET_SEARCH_TEXT: 'SET_SEARCH_TEXT',
   SET_STATUS_FILTER: 'SET_STATUS_FILTER',
+  SET_PAGE: 'SET_PAGE',
+  SET_PAGE_SIZE: 'SET_PAGE_SIZE',
+  SET_SORT: 'SET_SORT',
   SELECT_TICKET: 'SELECT_TICKET',
 };
 
@@ -38,14 +43,40 @@ function ticketDataReducer(state, action) {
         error: null,
       };
 
-    case TICKET_ACTIONS.LOAD_SUCCESS:
+    case TICKET_ACTIONS.LOAD_SUCCESS: {
+      const isArray = Array.isArray(action.payload);
+      const payload = action.payload || {};
+      const tickets = isArray
+        ? action.payload
+        : payload.content || payload.tickets || payload.data || [];
+
+      // 🛡️ Safely extract primitive page numbers (Spring Boot 3+ compatible)
+      const rawPage = payload.number ?? payload.pageable?.pageNumber ?? payload.page?.number;
+      const safePage = typeof rawPage === 'number' ? rawPage : state.pageInfo.page;
+
+      const rawSize = payload.size ?? payload.pageable?.pageSize ?? payload.page?.size;
+      const safeSize = typeof rawSize === 'number' ? rawSize : state.pageInfo.size;
+
+      const rawTotalPages = payload.totalPages ?? payload.page?.totalPages;
+      const safeTotalPages = typeof rawTotalPages === 'number' ? rawTotalPages : 1;
+
+      const rawTotalElements = payload.totalElements ?? payload.page?.totalElements;
+      const safeTotalElements = typeof rawTotalElements === 'number' ? rawTotalElements : tickets.length;
+
       return {
         ...state,
         loading: false,
-        tickets: action.payload.tickets ?? action.payload,
-        pageInfo: action.payload.pageInfo ?? state.pageInfo,
+        tickets,
+        pageInfo: {
+          ...state.pageInfo,
+          page: safePage,
+          size: safeSize,
+          totalPages: safeTotalPages,
+          totalElements: safeTotalElements,
+        },
         error: null,
       };
+    }
 
     case TICKET_ACTIONS.LOAD_ERROR:
       return {
@@ -54,9 +85,11 @@ function ticketDataReducer(state, action) {
         error: action.payload,
       };
 
+    // Reset to page 0 whenever filter/search criteria changes
     case TICKET_ACTIONS.SET_SEARCH_TEXT:
       return {
         ...state,
+        pageInfo: { ...state.pageInfo, page: 0 },
         filters: {
           ...state.filters,
           searchText: action.payload,
@@ -66,9 +99,42 @@ function ticketDataReducer(state, action) {
     case TICKET_ACTIONS.SET_STATUS_FILTER:
       return {
         ...state,
+        pageInfo: { ...state.pageInfo, page: 0 },
         filters: {
           ...state.filters,
           status: action.payload,
+        },
+      };
+
+    case TICKET_ACTIONS.SET_PAGE: {
+      const safePage = typeof action.payload === 'number' ? action.payload : Number(action.payload) || 0;
+      return {
+        ...state,
+        pageInfo: {
+          ...state.pageInfo,
+          page: safePage,
+        },
+      };
+    }
+
+    case TICKET_ACTIONS.SET_PAGE_SIZE:
+      return {
+        ...state,
+        pageInfo: {
+          ...state.pageInfo,
+          size: Number(action.payload) || 10,
+          page: 0, // Reset to first page when changing page size
+        },
+      };
+
+    case TICKET_ACTIONS.SET_SORT:
+      return {
+        ...state,
+        pageInfo: {
+          ...state.pageInfo,
+          sortBy: action.payload.sortBy ?? state.pageInfo.sortBy,
+          direction: action.payload.direction ?? state.pageInfo.direction,
+          page: 0, // Reset to first page when sorting changes
         },
       };
 
@@ -90,7 +156,6 @@ const TicketDataContext = createContext(null);
 export function TicketDataProvider({ children }) {
   const [state, dispatch] = useReducer(ticketDataReducer, initialState);
 
-  // Helper action creators using useCallback
   const loadStart = useCallback(() => {
     dispatch({ type: TICKET_ACTIONS.LOAD_START });
   }, []);
@@ -111,28 +176,39 @@ export function TicketDataProvider({ children }) {
     dispatch({ type: TICKET_ACTIONS.SET_STATUS_FILTER, payload: status });
   }, []);
 
+  const setPage = useCallback((page) => {
+    const safePage = typeof page === 'number' ? page : Number(page) || 0;
+    dispatch({ type: TICKET_ACTIONS.SET_PAGE, payload: safePage });
+  }, []);
+
+  const setPageSize = useCallback((size) => {
+    dispatch({ type: TICKET_ACTIONS.SET_PAGE_SIZE, payload: Number(size) });
+  }, []);
+
+  const setSort = useCallback((sortBy, direction) => {
+    dispatch({ type: TICKET_ACTIONS.SET_SORT, payload: { sortBy, direction } });
+  }, []);
+
   const selectTicket = useCallback((ticketId) => {
     dispatch({ type: TICKET_ACTIONS.SELECT_TICKET, payload: ticketId });
   }, []);
 
   const value = {
-    // State values
     tickets: state.tickets,
     selectedTicketId: state.selectedTicketId,
     loading: state.loading,
     error: state.error,
     pageInfo: state.pageInfo,
     filters: state.filters,
-
-    // Raw dispatch (for custom actions)
     dispatch,
-
-    // Action functions
     loadStart,
     loadSuccess,
     loadError,
     setSearchText,
     setStatusFilter,
+    setPage,
+    setPageSize,
+    setSort,
     selectTicket,
   };
 
