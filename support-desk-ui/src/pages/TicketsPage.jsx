@@ -8,10 +8,13 @@ export default function TicketsPage() {
     tickets,
     loading,
     error,
+    source,          // 'cache' | 'backend'
+    cache,           // In-memory cache object from context
     pageInfo,
     filters,
     loadStart,
     loadSuccess,
+    loadFromCache,   // Context action for cache hit
     loadError,
     setSearchText,
     setStatusFilter,
@@ -20,30 +23,41 @@ export default function TicketsPage() {
     setSort,
   } = useTicketData();
 
-  // Safely extract primitive page number regardless of context state
+  // Safely extract primitive page number
   const rawPage = pageInfo?.page;
   const currentPage = typeof rawPage === 'number' ? rawPage : 0;
 
-  // 1. Fetch paged & filtered tickets whenever page, size, sorting, or filters change
-  useEffect(() => {
-    async function fetchTickets() {
-      try {
-        loadStart();
-        const data = await getPagedTickets({
-          page: currentPage, // Safe number
-          size: Number(pageInfo.size) || 10,
-          sortBy: pageInfo.sortBy || 'createdAt',
-          direction: pageInfo.direction || 'desc',
-          searchText: filters.searchText || '',
-          status: filters.status || 'ALL',
-        });
-        loadSuccess(data);
-      } catch (err) {
-        loadError(err.message || 'Failed to load paged tickets.');
-      }
+  // Build the cache key requirement: page|size|sortBy|direction
+  const cacheKey = `${currentPage}|${pageInfo.size || 10}|${pageInfo.sortBy || 'createdAt'}|${pageInfo.direction || 'desc'}|${filters.searchText || ''}|${filters.status || 'ALL'}`;
+
+  // Master fetch function supporting cached reads & forced reloads
+  const fetchTickets = async (isRefresh = false) => {
+    // 1. Check for Cache Hit (unless manual refresh is triggered)
+    if (!isRefresh && cache && cache[cacheKey]) {
+      loadFromCache(cacheKey);
+      return;
     }
 
-    fetchTickets();
+    // 2. Cache Miss or Forced Refresh: Fetch directly from backend
+    try {
+      loadStart();
+      const data = await getPagedTickets({
+        page: currentPage,
+        size: Number(pageInfo.size) || 10,
+        sortBy: pageInfo.sortBy || 'createdAt',
+        direction: pageInfo.direction || 'desc',
+        searchText: filters.searchText || '',
+        status: filters.status || 'ALL',
+      });
+      loadSuccess(data, cacheKey);
+    } catch (err) {
+      loadError(err.message || 'Failed to load paged tickets.');
+    }
+  };
+
+  // Trigger fetch/cache load whenever pagination, sorting, or filtering parameters change
+  useEffect(() => {
+    fetchTickets(false);
   }, [
     currentPage,
     pageInfo.size,
@@ -51,9 +65,6 @@ export default function TicketsPage() {
     pageInfo.direction,
     filters.searchText,
     filters.status,
-    loadStart,
-    loadSuccess,
-    loadError,
   ]);
 
   if (loading && tickets.length === 0) {
@@ -66,15 +77,54 @@ export default function TicketsPage() {
 
   return (
     <div style={{ padding: '2rem' }}>
-      {/* Header and New Ticket Action */}
+      {/* Header, Source Badge, and Actions */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-        <h2>Support Tickets ({pageInfo.totalElements || tickets.length} Total)</h2>
-        <Link 
-          to="/app/tickets/new" 
-          style={{ padding: '0.5rem 1rem', background: '#28a745', color: '#fff', textDecoration: 'none', borderRadius: '4px' }}
-        >
-          + New Ticket
-        </Link>
+        <div>
+          <h2>Support Tickets ({pageInfo.totalElements || tickets.length} Total)</h2>
+          
+          {/* Requirement: Small message showing data source */}
+          {source && (
+            <span
+              style={{
+                display: 'inline-block',
+                marginTop: '4px',
+                padding: '4px 10px',
+                borderRadius: '12px',
+                fontSize: '12px',
+                fontWeight: 'bold',
+                color: '#ffffff',
+                backgroundColor: source === 'cache' ? '#17a2b8' : '#28a745',
+              }}
+            >
+              {source === 'cache' ? '⚡ Loaded from cache' : '🌐 Fetched from backend'}
+            </span>
+          )}
+        </div>
+
+        <div style={{ display: 'flex', gap: '8px' }}>
+          {/* Requirement: Refresh button forces backend reload */}
+          <button
+            onClick={() => fetchTickets(true)}
+            disabled={loading}
+            style={{
+              padding: '0.5rem 1rem',
+              backgroundColor: '#6c757d',
+              color: '#ffffff',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: loading ? 'not-allowed' : 'pointer',
+            }}
+          >
+            🔄 Refresh
+          </button>
+
+          <Link 
+            to="/app/tickets/new" 
+            style={{ padding: '0.5rem 1rem', background: '#28a745', color: '#fff', textDecoration: 'none', borderRadius: '4px' }}
+          >
+            + New Ticket
+          </Link>
+        </div>
       </div>
 
       {/* Control Bar: Search, Filter, Sort, Page Size */}
