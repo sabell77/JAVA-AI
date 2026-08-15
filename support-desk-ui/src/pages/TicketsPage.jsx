@@ -2,6 +2,7 @@ import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { useTicketData } from '../context/TicketDataContext';
 import { getPagedTickets } from '../services/ticketApi';
+import TicketSummaryCards from '../components/TicketSummaryCards';
 
 export default function TicketsPage() {
   const {
@@ -123,6 +124,9 @@ export default function TicketsPage() {
           </Link>
         </div>
       </div>
+
+      {/* 2. Render Summary Cards showing metric totals */}
+      <TicketSummaryCards tickets={tickets} />
 
       {/* Control Bar: Search, Filter, Sort, Page Size */}
       <div style={{ 
