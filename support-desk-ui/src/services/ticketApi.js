@@ -1,84 +1,73 @@
-const API_BASE_URL = '/api/v1/tickets';
+import { apiRequest } from './httpClient';
 
-// Helper to safely parse JSON or return an empty object for 204/empty responses
-async function parseResponseBody(response) {
-  if (response.status === 204) return null;
-  const text = await response.text();
-  return text ? JSON.parse(text) : null;
-}
+/**
+ * Fetch all tickets
+ * GET /api/v1/tickets
+ */
+export const getTickets = () => 
+  apiRequest('/api/v1/tickets');
 
-// Create a new ticket (POST)
-export async function createTicket(token, payload) {
-  const response = await fetch(API_BASE_URL, {
+/**
+ * Fetch a single ticket by ID
+ * GET /api/v1/tickets/:id
+ */
+export const getTicketById = (ticketId) => 
+  apiRequest(`/api/v1/tickets/${ticketId}`);
+
+/**
+ * Create a new ticket
+ * POST /api/v1/tickets
+ */
+export const createTicket = (ticketData) =>
+  apiRequest('/api/v1/tickets', {
     method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(payload),
+    body: ticketData,
   });
 
-  if (!response.ok) {
-    const errorData = await parseResponseBody(response).catch(() => ({}));
-    throw new Error(errorData?.message || 'Failed to create ticket.');
-  }
-
-  return await parseResponseBody(response);
-}
-
-// Fetch single ticket by ID (GET)
-export async function getTicketById(token, ticketId) {
-  const response = await fetch(`${API_BASE_URL}/${ticketId}`, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-  });
-
-  if (!response.ok) {
-    const errorData = await parseResponseBody(response).catch(() => ({}));
-    throw new Error(errorData?.message || 'Failed to fetch ticket details.');
-  }
-
-  return await parseResponseBody(response);
-}
-
-// Update an existing ticket (PUT)
-export async function updateTicket(token, ticketId, ticketData) {
-  console.log('🔑 Sending Token on PUT:', token);
-
-  const response = await fetch(`${API_BASE_URL}/${ticketId}`, {
+/**
+ * Update an existing ticket
+ * PUT /api/v1/tickets/:id
+ */
+export const updateTicket = (ticketId, ticketData) =>
+  apiRequest(`/api/v1/tickets/${ticketId}`, {
     method: 'PUT',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
-    body: JSON.stringify(ticketData),
+    body: ticketData,
   });
 
-  if (!response.ok) {
-    const errorData = await parseResponseBody(response).catch(() => ({}));
-    throw new Error(errorData?.message || 'Failed to update ticket.');
-  }
-
-  return await parseResponseBody(response);
-}
-
-// Fetch all tickets (GET)
-export async function getTickets(token) {
-  const response = await fetch(API_BASE_URL, {
-    method: 'GET',
-    headers: {
-      'Content-Type': 'application/json',
-      Authorization: `Bearer ${token}`,
-    },
+/**
+ * Delete a ticket
+ * DELETE /api/v1/tickets/:id
+ */
+export const deleteTicket = (ticketId) =>
+  apiRequest(`/api/v1/tickets/${ticketId}`, {
+    method: 'DELETE',
   });
 
-  if (!response.ok) {
-    const errorData = await parseResponseBody(response).catch(() => ({}));
-    throw new Error(errorData?.message || 'Failed to fetch tickets.');
+/**
+ * Fetch paged, sorted, and filtered tickets.
+ * GET /api/v1/tickets?page=0&size=5&sortBy=createdAt&direction=desc
+ */
+export async function getPagedTickets({
+  page = 0,
+  size = 5,
+  sortBy = 'createdAt',
+  direction = 'desc',
+  searchText = '',
+  status = 'ALL',
+} = {}) {
+  const queryParams = new URLSearchParams({
+    page: String(page),
+    size: String(size),
+    sortBy,
+    direction,
+  });
+
+  if (searchText) {
+    queryParams.append('searchText', searchText);
+  }
+  if (status && status !== 'ALL') {
+    queryParams.append('status', status);
   }
 
-  return await parseResponseBody(response);
+  return apiRequest(`/api/v1/tickets/paged?${queryParams.toString()}`);
 }
