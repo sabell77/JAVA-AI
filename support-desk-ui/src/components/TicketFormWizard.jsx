@@ -1,4 +1,9 @@
 import { useState } from 'react';
+import {
+  validateTicketFormStep,
+  normalizeTicketFormPayload,
+  formatTicketFormLabel,
+} from '../utils/ticketFormValidation';
 
 export default function TicketFormWizard({ onSubmit, initialData = {}, isSubmitting = false }) {
   const [formData, setFormData] = useState({
@@ -11,18 +16,6 @@ export default function TicketFormWizard({ onSubmit, initialData = {}, isSubmitt
 
   const [errors, setErrors] = useState({});
 
-  const validate = () => {
-    const newErrors = {};
-    if (!formData.title.trim()) newErrors.title = 'Title is required.';
-    if (!formData.description.trim()) newErrors.description = 'Description is required.';
-    if (!formData.category.trim()) newErrors.category = 'Category is required.';
-    if (!formData.priority) newErrors.priority = 'Priority is required.';
-    if (!formData.status) newErrors.status = 'Status is required.';
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -34,14 +27,24 @@ export default function TicketFormWizard({ onSubmit, initialData = {}, isSubmitt
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!validate()) return;
-    onSubmit(formData);
+    
+    const newErrors = validateTicketFormStep(formData);
+    if (Object.keys(newErrors).length > 0) {
+      setErrors(newErrors);
+      return;
+    }
+
+    setErrors({});
+    const payload = normalizeTicketFormPayload(formData);
+    onSubmit(payload);
   };
 
   return (
     <form onSubmit={handleSubmit} style={{ maxWidth: '600px', display: 'flex', flexDirection: 'column', gap: '1rem' }} noValidate>
       <div>
-        <label htmlFor="title" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>Title</label>
+        <label htmlFor="title" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+          {formatTicketFormLabel('title')}
+        </label>
         <input
           id="title"
           type="text"
@@ -55,7 +58,9 @@ export default function TicketFormWizard({ onSubmit, initialData = {}, isSubmitt
       </div>
 
       <div>
-        <label htmlFor="description" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>Description</label>
+        <label htmlFor="description" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+          {formatTicketFormLabel('description')}
+        </label>
         <textarea
           id="description"
           name="description"
@@ -69,7 +74,9 @@ export default function TicketFormWizard({ onSubmit, initialData = {}, isSubmitt
       </div>
 
       <div>
-        <label htmlFor="category" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>Category</label>
+        <label htmlFor="category" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+          {formatTicketFormLabel('category')}
+        </label>
         <input
           id="category"
           type="text"
@@ -83,7 +90,9 @@ export default function TicketFormWizard({ onSubmit, initialData = {}, isSubmitt
       </div>
 
       <div>
-        <label htmlFor="priority" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>Priority</label>
+        <label htmlFor="priority" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+          {formatTicketFormLabel('priority')}
+        </label>
         <select
           id="priority"
           name="priority"
@@ -100,7 +109,9 @@ export default function TicketFormWizard({ onSubmit, initialData = {}, isSubmitt
       </div>
 
       <div>
-        <label htmlFor="status" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>Status</label>
+        <label htmlFor="status" style={{ display: 'block', marginBottom: '0.25rem', fontWeight: 'bold' }}>
+          {formatTicketFormLabel('status')}
+        </label>
         <select
           id="status"
           name="status"
