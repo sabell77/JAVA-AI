@@ -12,8 +12,8 @@ import org.springframework.data.domain.*;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
 import org.springframework.data.mongodb.core.query.Query;
-import org.springframework.security.access.AccessDeniedException; 
-import org.springframework.security.core.Authentication; 
+import org.springframework.security.access.AccessDeniedException;
+import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 
@@ -26,7 +26,7 @@ public class TicketService {
 
     private static final Logger log = LoggerFactory.getLogger(TicketService.class);
     private final TicketRepository ticketRepository;
-    private final MongoTemplate mongoTemplate; // <-- Injected MongoTemplate
+    private final MongoTemplate mongoTemplate;
 
     public TicketService(TicketRepository ticketRepository, MongoTemplate mongoTemplate) {
         this.ticketRepository = ticketRepository;
@@ -34,33 +34,20 @@ public class TicketService {
     }
 
     public List<TicketResponse> getTicketsForCurrentUser() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = getAuthentication();
         String currentUserEmail = auth.getName();
-
         boolean isAdmin = checkIsAdmin(auth);
 
-        List<Ticket> tickets;
-        if (isAdmin) {
-            tickets = ticketRepository.findAll();
-        } else {
-            tickets = ticketRepository.findByCreatedBy(currentUserEmail);
-        }
+        List<Ticket> tickets = isAdmin 
+                ? ticketRepository.findAll() 
+                : ticketRepository.findByCreatedBy(currentUserEmail);
 
         return tickets.stream().map(this::mapToResponseDTO).toList();
     }
 
     public TicketResponse getTicketById(String id) {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUserEmail = auth.getName();
-        boolean isAdmin = checkIsAdmin(auth);
-
-        if (!isAdmin && !currentUserEmail.equalsIgnoreCase(ticket.getCreatedBy())) {
-            throw new AccessDeniedException("You do not have permission to view this ticket.");
-        }
-
+        Ticket ticket = findTicketOrThrow(id);
+        enforceOwnerOrAdmin(ticket, "view");
         return mapToResponseDTO(ticket);
     }
 
@@ -71,7 +58,7 @@ public class TicketService {
         ticket.setCategory(request.category());
         ticket.setPriority(request.priority());
         ticket.setStatus("OPEN");
-        ticket.setCreatedBy(createdBy); 
+        ticket.setCreatedBy(createdBy);
         ticket.setCreatedAt(LocalDateTime.now());
 
         Ticket savedTicket = ticketRepository.save(ticket);
@@ -79,18 +66,8 @@ public class TicketService {
     }
 
     public TicketResponse updateTicket(String id, UpdateTicketRequest request) {
-        Ticket ticket = ticketRepository.findById(id)
-                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
-
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String currentUserEmail = auth.getName();
-        boolean isAdmin = checkIsAdmin(auth);
-
-        boolean isOwner = ticket.getCreatedBy() != null && ticket.getCreatedBy().equalsIgnoreCase(currentUserEmail);
-
-        if (!isAdmin && !isOwner) {
-            throw new AccessDeniedException("You do not have permission to update this ticket.");
-        }
+        Ticket ticket = findTicketOrThrow(id);
+        enforceOwnerOrAdmin(ticket, "update");
 
         ticket.setTitle(request.getTitle());
         ticket.setDescription(request.getDescription());
@@ -102,9 +79,6 @@ public class TicketService {
         return mapToResponseDTO(updatedTicket);
     }
 
-    /**
-     * Requirement: Fetch paginated, sorted, and dynamically filtered tickets with MongoDB
-     */
     public Page<TicketResponse> getPagedTickets(
             int page, 
             int size, 
@@ -113,57 +87,75 @@ public class TicketService {
             String searchText, 
             String status
     ) {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        Authentication auth = getAuthentication();
         String currentUserEmail = auth.getName();
         boolean isAdmin = checkIsAdmin(auth);
 
         log.info("Fetching paginated tickets (Mongo) -> User: {}, Page: {}, Size: {}, Sort: {}, Direction: {}, Search: {}, Status: {}", 
                 currentUserEmail, page, size, sortBy, direction, searchText, status);
 
-        // 1. Configure Sorting & Pageable
         Sort.Direction sortDirection = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
-        // 2. Build MongoDB Query with Criteria
+        Query query = buildPagedQuery(isAdmin, currentUserEmail, status, searchText);
+
+        long totalCount = mongoTemplate.count(query, Ticket.class);
+        query.with(pageable);
+        List<Ticket> tickets = mongoTemplate.find(query, Ticket.class);
+
+        List<TicketResponse> dtos = tickets.stream().map(this::mapToResponseDTO).toList();
+        return new PageImpl<>(dtos, pageable, totalCount);
+    }
+
+    // --- Private Helper Methods ---
+
+    private Ticket findTicketOrThrow(String id) {
+        return ticketRepository.findById(id)
+                .orElseThrow(() -> new ResourceNotFoundException("Ticket not found with id: " + id));
+    }
+
+    private Authentication getAuthentication() {
+        return SecurityContextHolder.getContext().getAuthentication();
+    }
+
+    private void enforceOwnerOrAdmin(Ticket ticket, String action) {
+        Authentication auth = getAuthentication();
+        String currentUserEmail = auth != null ? auth.getName() : "";
+        boolean isAdmin = checkIsAdmin(auth);
+
+        boolean isOwner = ticket.getCreatedBy() != null && ticket.getCreatedBy().equalsIgnoreCase(currentUserEmail);
+
+        if (!isAdmin && !isOwner) {
+            throw new AccessDeniedException("You do not have permission to " + action + " this ticket.");
+        }
+    }
+
+    private Query buildPagedQuery(boolean isAdmin, String currentUserEmail, String status, String searchText) {
         Query query = new Query();
         List<Criteria> criteriaList = new ArrayList<>();
 
-        // Constraint A: Role Isolation (Regular users only see their own tickets)
         if (!isAdmin) {
             criteriaList.add(Criteria.where("createdBy").regex("^" + currentUserEmail.trim() + "$", "i"));
         }
 
-        // Constraint B: Status Filter (Ignore "ALL", empty, or null)
         if (status != null && !status.isBlank() && !"ALL".equalsIgnoreCase(status.trim())) {
             String statusPattern = status.trim().replace("_", "[ _]");
             criteriaList.add(Criteria.where("status").regex("^" + statusPattern + "$", "i"));
         }
 
-        // Constraint C: Search Text (Matches title or category case-insensitively)
         if (searchText != null && !searchText.trim().isBlank()) {
             String pattern = searchText.trim();
-            Criteria searchCriteria = new Criteria().orOperator(
+            criteriaList.add(new Criteria().orOperator(
                     Criteria.where("title").regex(pattern, "i"),
                     Criteria.where("category").regex(pattern, "i")
-            );
-            criteriaList.add(searchCriteria);
+            ));
         }
 
-        // Combine all active criteria using AND
         if (!criteriaList.isEmpty()) {
             query.addCriteria(new Criteria().andOperator(criteriaList.toArray(new Criteria[0])));
         }
 
-        // 3. Count total matching documents for pagination metadata
-        long totalCount = mongoTemplate.count(query, Ticket.class);
-
-        // 4. Apply Pagination to the Query and Execute
-        query.with(pageable);
-        List<Ticket> tickets = mongoTemplate.find(query, Ticket.class);
-
-        // 5. Convert to DTO Page
-        List<TicketResponse> dtos = tickets.stream().map(this::mapToResponseDTO).toList();
-        return new PageImpl<>(dtos, pageable, totalCount);
+        return query;
     }
 
     private boolean checkIsAdmin(Authentication auth) {
